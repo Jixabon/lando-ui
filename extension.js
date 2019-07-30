@@ -1,37 +1,69 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
-
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+const { exec } = require('child_process');
 
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
+  console.log('Congratulations, your extension "lando-ui" is now active!');
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "lando-ui" is now active!');
+  let landoStart = vscode.commands.registerCommand(
+    'extension.landoStart',
+    () => {
+      exec('lando start', (error, stdout, stderr) => {
+        if (error) {
+          console.error(`exec error: ${error}`);
+          vscode.window.showErrorMessage(stderr);
+          return;
+        }
+        console.log(`stdout: ${stdout}`);
+        console.log(`stderr: ${stderr}`);
+        vscode.window.showInformationMessage('Starting Lando');
+      });
+    }
+  );
+  context.subscriptions.push(landoStart);
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('extension.helloWorld', function () {
-		// The code you place here will be executed every time your command is executed
+  let landoStop = vscode.commands.registerCommand('extension.landoStop', () => {
+    exec('lando Stop', (error, stdout, stderr) => {
+      if (error) {
+        console.error(`exec error: ${error}`);
+        vscode.window.showErrorMessage(stderr);
+        return;
+      }
+      console.log(`stdout: ${stdout}`);
+      console.log(`stderr: ${stderr}`);
+      vscode.window.showInformationMessage('Stoping Lando');
+    });
+  });
+  context.subscriptions.push(landoStop);
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World!');
-	});
+  let startStopButton = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Right,
+    3
+  );
+  startStopButton.command = 'extension.landoStart';
+  startStopButton.text = 'Lando Start';
+  context.subscriptions.push(startStopButton);
 
-	context.subscriptions.push(disposable);
+  exec('lando --version', (error, stdout, stderr) => {
+    if (error) {
+      vscode.window.showErrorMessage(
+        'Please make sure that Lando is installed correctly. ' + stderr
+      );
+      return;
+    }
+    startStopButton.show();
+  });
 }
 exports.activate = activate;
 
 // this method is called when your extension is deactivated
 function deactivate() {}
 
+// function toggleRun() {}
+
 module.exports = {
-	activate,
-	deactivate
-}
+  activate,
+  deactivate
+};
