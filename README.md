@@ -49,6 +49,13 @@ Added features X, Y, and Z.
 
 ---
 
+## To Do
+
+- Add any warnings from "lando start" as vscode warnings
+- Add information from "lando info" in sidebar when project is started
+
+---
+
 ## Working with Markdown
 
 **Note:** You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
