@@ -3,6 +3,6 @@
 test/**
 .gitignore
 vsc-extension-quickstart.md
-**/jsconfig.json
+**/tsconfig.json
 **/*.map
-**/.eslintrc.json
+**/tslint.json

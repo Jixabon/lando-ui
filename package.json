@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "publisher": "Jixabon",
   "engines": {
-    "vscode": "^1.36.0"
+    "vscode": "^1.39.0"
   },
   "categories": [
     "Other"
@@ -13,34 +13,124 @@
   "activationEvents": [
     "*"
   ],
-  "main": "./extension.js",
+  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "extension.landoStart",
+        "command": "lando.start",
         "title": "Lando Start"
       },
       {
-        "command": "extension.landoStop",
+        "command": "lando.stop",
         "title": "Lando Stop"
+      },
+      {
+        "command": "lando.poweroff",
+        "title": "Lando Poweroff"
+      },
+      {
+        "command": "lando.info-refresh",
+        "title": "Refresh",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "lando.list-refresh",
+        "title": "Refresh",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "lando.info-refreshNode",
+        "title": "Refresh",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "lando.list-refreshNode",
+        "title": "Refresh",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "lando-ui",
+          "title": "Lando UI",
+          "icon": "media/lando.png"
+        }
+      ]
+    },
+    "views": {
+      "lando-ui": [
+        {
+          "id": "lando-info",
+          "name": "Lando Info"
+        },
+        {
+          "id": "lando-list",
+          "name": "Lando List"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "lando.start",
+          "when": "view == lando-info"
+        },
+        {
+          "command": "lando.stop",
+          "when": "view == lando-info"
+        },
+        {
+          "command": "lando.poweroff"
+        },
+        {
+          "command": "lando.info-refresh",
+          "when": "view == lando-info",
+          "group": "navigation"
+        },
+        {
+          "command": "lando.list-refresh",
+          "when": "view == lando-list",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
-    "test": "node ./test/runTest.js"
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
     "@types/glob": "^7.1.1",
     "@types/mocha": "^5.2.6",
     "@types/node": "^10.12.21",
-    "@types/vscode": "^1.36.0",
-    "eslint": "^5.13.0",
+    "@types/vscode": "^1.39.0",
     "glob": "^7.1.4",
     "mocha": "^6.1.4",
     "typescript": "^3.3.1",
-    "vscode-test": "^1.0.2"
+    "tslint": "^5.12.1",
+    "vscode-test": "^1.2.0"
   },
   "dependencies": {
-    "child_process": "^1.0.2"
+    "@types/yaml": "^1.2.0",
+    "child_process": "^1.0.2",
+    "jsonc-parser": "^0.4.2",
+    "strip-ansi": "^5.2.0",
+    "yaml": "^1.6.0"
   }
 }
