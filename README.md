@@ -22,6 +22,12 @@ To install lando and it's dependencies follow the [installation instruction](htt
 
 ## Release Notes
 
+### v0.1.3
+
+#### Fixed
+
+- jsonc-parser moved to an external webpack resource.
+
 ### v0.1.0
 
 #### Added

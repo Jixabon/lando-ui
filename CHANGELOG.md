@@ -9,6 +9,12 @@ All notable changes to the "lando-ui" extension will be documented in this file.
 - Add button to stop projects in the Lando List view.
 - Integrate more lando commands to the interface.
 
+## [0.1.3] - 2019-10-14
+
+### Fixed
+
+- jsonc-parser moved to an external webpack resource.
+
 ## [0.1.2] - 2019-10-13
 
 ### Added
