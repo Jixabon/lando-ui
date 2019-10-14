@@ -1,4 +1,10 @@
-import { ExtensionContext, window, OutputChannel, StatusBarItem, commands } from 'vscode';
+import {
+  ExtensionContext,
+  window,
+  OutputChannel,
+  StatusBarItem,
+  commands
+} from 'vscode';
 import { exec, execSync } from 'child_process';
 import * as stripAnsi from 'strip-ansi';
 
@@ -6,7 +12,11 @@ export class Lando {
   private toggleButton: any;
   private outputChannel: any;
 
-  constructor(context: ExtensionContext, toggleButton?: StatusBarItem, outputChannel?: OutputChannel) {
+  constructor(
+    context: ExtensionContext,
+    toggleButton?: StatusBarItem,
+    outputChannel?: OutputChannel
+  ) {
     this.toggleButton = toggleButton;
     this.outputChannel = outputChannel;
   }
@@ -14,7 +24,11 @@ export class Lando {
   public start(dir: string): void {
     const child = exec('lando start', { cwd: dir });
     child.stdout.on('data', data => {
-      if (data.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
+      if (
+        data.includes(
+          'Could not find app in this dir or a reasonable amount of directories above it!'
+        )
+      ) {
         window.showWarningMessage('Please initiate a lando project: ' + data);
         this.toggleButton.text = 'Lando Start';
         this.toggleButton.command = 'lando.start';
@@ -38,7 +52,9 @@ export class Lando {
     });
     child.on('exit', (code, signal) => {
       this.outputChannel.appendLine('-----------------------');
-      this.outputChannel.appendLine('child process exited with ' + `code ${code} and signal ${signal}`);
+      this.outputChannel.appendLine(
+        'child process exited with ' + `code ${code} and signal ${signal}`
+      );
       this.outputChannel.appendLine('-----------------------');
     });
   }
@@ -46,7 +62,11 @@ export class Lando {
   public stop(dir: string): void {
     const child = exec('lando stop', { cwd: dir });
     child.stdout.on('data', data => {
-      if (data.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
+      if (
+        data.includes(
+          'Could not find app in this dir or a reasonable amount of directories above it!'
+        )
+      ) {
         window.showWarningMessage('Please initiate a lando project: ' + data);
         this.toggleButton.text = 'Lando Stop';
         this.toggleButton.command = 'lando.stop';
@@ -70,18 +90,27 @@ export class Lando {
     });
     child.on('exit', (code, signal) => {
       this.outputChannel.appendLine('-----------------------');
-      this.outputChannel.appendLine('child process exited with ' + `code ${code} and signal ${signal}`);
+      this.outputChannel.appendLine(
+        'child process exited with ' + `code ${code} and signal ${signal}`
+      );
       this.outputChannel.appendLine('-----------------------');
     });
   }
 
   public info(dir: string): string {
     try {
-      var stdout = execSync('lando info --format json', { cwd: '/Users/shawn/Documents/Projects/lando/lando_ui_test', encoding: 'utf8' });
+      var stdout = execSync('lando info --format json', {
+        cwd: dir,
+        encoding: 'utf8'
+      });
       return stdout;
     } catch (e) {
       if (
-        e.toString().includes('Could not find app in this dir or a reasonable amount of directories above it') ||
+        e
+          .toString()
+          .includes(
+            'Could not find app in this dir or a reasonable amount of directories above it'
+          ) ||
         e.toString().includes("Cannot set property 'opts' of undefined")
       ) {
         window.showWarningMessage('Please initiate a lando project: ' + e);
@@ -113,7 +142,9 @@ export class Lando {
         window.showInformationMessage('Powering off Lando');
       }
       if (data.includes('Lando containers have been spun down')) {
-        window.showInformationMessage('Lando has been powered off started successfully');
+        window.showInformationMessage(
+          'Lando has been powered off started successfully'
+        );
         this.toggleButton.text = 'Lando Start';
         this.toggleButton.command = 'lando.start';
         commands.executeCommand('lando.info-refresh');
@@ -126,7 +157,9 @@ export class Lando {
     });
     child.on('exit', (code, signal) => {
       this.outputChannel.appendLine('-----------------------');
-      this.outputChannel.appendLine('child process exited with ' + `code ${code} and signal ${signal}`);
+      this.outputChannel.appendLine(
+        'child process exited with ' + `code ${code} and signal ${signal}`
+      );
       this.outputChannel.appendLine('-----------------------');
     });
   }

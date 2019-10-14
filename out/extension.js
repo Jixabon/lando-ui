@@ -23,13 +23,14 @@ function activate(context) {
     outputChannel = vscode_1.window.createOutputChannel('Lando UI');
     context.subscriptions.push(outputChannel);
     let lando = new lando_1.Lando(context, toggleButton, outputChannel);
-    workspaceFolderPath = vscode_1.workspace.workspaceFolders ? vscode_1.workspace.workspaceFolders[0].uri.fsPath : '';
+    workspaceFolderPath = vscode_1.workspace.workspaceFolders
+        ? vscode_1.workspace.workspaceFolders[0].uri.fsPath
+        : '';
     landoAppConfig = yaml.parse(fs.readFileSync(workspaceFolderPath + '/.lando.yml', 'utf8'));
     currentAppName = landoAppConfig.name.replace(/[-_]/g, '');
     child_process_1.exec('lando version', (error, stdout, stderr) => {
         if (error) {
             vscode_1.window.showErrorMessage('Please make sure that lando is installed correctly. ' + stderr);
-            return;
         }
         toggleButton.show();
     });

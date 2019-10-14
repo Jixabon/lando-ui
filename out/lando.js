@@ -72,11 +72,16 @@ class Lando {
     }
     info(dir) {
         try {
-            var stdout = child_process_1.execSync('lando info --format json', { cwd: '/Users/shawn/Documents/Projects/lando/lando_ui_test', encoding: 'utf8' });
+            var stdout = child_process_1.execSync('lando info --format json', {
+                cwd: dir,
+                encoding: 'utf8'
+            });
             return stdout;
         }
         catch (e) {
-            if (e.toString().includes('Could not find app in this dir or a reasonable amount of directories above it') ||
+            if (e
+                .toString()
+                .includes('Could not find app in this dir or a reasonable amount of directories above it') ||
                 e.toString().includes("Cannot set property 'opts' of undefined")) {
                 vscode_1.window.showWarningMessage('Please initiate a lando project: ' + e);
                 return 'warn: Could not find app in this dir or a reasonable amount of directories about it';

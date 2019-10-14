@@ -1,4 +1,12 @@
-import { window, commands, workspace, OutputChannel, ExtensionContext, StatusBarAlignment, StatusBarItem } from 'vscode';
+import {
+  window,
+  commands,
+  workspace,
+  OutputChannel,
+  ExtensionContext,
+  StatusBarAlignment,
+  StatusBarItem
+} from 'vscode';
 import { exec } from 'child_process';
 import * as yaml from 'yaml';
 import * as fs from 'fs';
@@ -27,16 +35,21 @@ export function activate(context: ExtensionContext) {
 
   let lando = new Lando(context, toggleButton, outputChannel);
 
-  workspaceFolderPath = workspace.workspaceFolders ? workspace.workspaceFolders[0].uri.fsPath : '';
+  workspaceFolderPath = workspace.workspaceFolders
+    ? workspace.workspaceFolders[0].uri.fsPath
+    : '';
 
-  landoAppConfig = yaml.parse(fs.readFileSync(workspaceFolderPath + '/.lando.yml', 'utf8'));
+  landoAppConfig = yaml.parse(
+    fs.readFileSync(workspaceFolderPath + '/.lando.yml', 'utf8')
+  );
 
   currentAppName = landoAppConfig.name.replace(/[-_]/g, '');
 
   exec('lando version', (error: any, stdout: any, stderr: string) => {
     if (error) {
-      window.showErrorMessage('Please make sure that lando is installed correctly. ' + stderr);
-      return;
+      window.showErrorMessage(
+        'Please make sure that lando is installed correctly. ' + stderr
+      );
     }
     toggleButton.show();
   });
@@ -48,15 +61,33 @@ export function activate(context: ExtensionContext) {
     toggleButton.command = 'lando.stop';
   }
 
-  context.subscriptions.push(commands.registerCommand('lando.start', () => lando.start(workspaceFolderPath)));
-  context.subscriptions.push(commands.registerCommand('lando.stop', () => lando.stop(workspaceFolderPath)));
-  context.subscriptions.push(commands.registerCommand('lando.poweroff', () => lando.poweroff()));
+  context.subscriptions.push(
+    commands.registerCommand('lando.start', () =>
+      lando.start(workspaceFolderPath)
+    )
+  );
+  context.subscriptions.push(
+    commands.registerCommand('lando.stop', () =>
+      lando.stop(workspaceFolderPath)
+    )
+  );
+  context.subscriptions.push(
+    commands.registerCommand('lando.poweroff', () => lando.poweroff())
+  );
 
   window.registerTreeDataProvider('lando-info', landoInfoProvider);
-  commands.registerCommand('lando.info-refresh', () => landoInfoProvider.refresh());
-  commands.registerCommand('lando.info-refreshNode', offset => landoInfoProvider.refresh(offset));
+  commands.registerCommand('lando.info-refresh', () =>
+    landoInfoProvider.refresh()
+  );
+  commands.registerCommand('lando.info-refreshNode', offset =>
+    landoInfoProvider.refresh(offset)
+  );
 
   window.registerTreeDataProvider('lando-list', landoListProvider);
-  commands.registerCommand('lando.list-refresh', () => landoListProvider.refresh());
-  commands.registerCommand('lando.list-refreshNode', offset => landoListProvider.refresh(offset));
+  commands.registerCommand('lando.list-refresh', () =>
+    landoListProvider.refresh()
+  );
+  commands.registerCommand('lando.list-refreshNode', offset =>
+    landoListProvider.refresh(offset)
+  );
 }
