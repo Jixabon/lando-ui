@@ -1,58 +1,43 @@
-# lando-ui README
-
-Lando UI provides shortcuts in VSCode for the development tool Lando.
+# Lando UI
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+Lando UI was designed so simplify the use of the lando development tool when inside VSCode. It adds quick button shortcuts and information panels that allow quick, 'no command' access to your current lando project, as well as other running projects/containers.
 
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+<!-- \!\[feature X\]\(images/feature-x.png\) -->
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Lando UI requires that you have the lando too installed and at a minimum version of v3.0.0-rc13. The `--format json` option was added in this release and is required for the functionality of this extension.
 
-## Extension Settings
+To install lando and it's dependencies follow the [installation instruction](https://docs.lando.dev/basics/installation.html) on their website.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+<!-- ## Extension Settings -->
 
-For example:
+<!-- This extension contributes the following settings: -->
 
-This extension contributes the following settings:
-
-- `myExtension.enable`: enable/disable this extension
-- `myExtension.thing`: set to `blah` to do something
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
+<!-- ## Known Issues -->
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### v0.1.0
 
-### 1.0.0
+#### Added
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+- Status Bar Item that shows status of current workspace lando project and also provides ability to toggle status.
+- View for Lando Info to show basic info about the current workspace lando project.
+- View for Lando List to show basic info about the containers that are running.
+- Refresh button to both views.
+- Menu items to run lando commands.
 
 ---
 
 ## To Do
 
-- Add any warnings from "lando start" as vscode warnings
-- Add information from "lando info" in sidebar when project is started
+- Clean up Lando Info and Lando List outputs to be more visually appealing and first glance understandable.
+- Make URLs Clickable in the Lando Info and List views.
+- Add button to stop projects in the Lando List view.
+- Integrate more lando commands to the interface.
 
 ---
 

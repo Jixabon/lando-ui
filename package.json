@@ -4,6 +4,8 @@
   "description": "Provides a vscode ui for the development tool lando",
   "version": "0.1.0",
   "publisher": "Jixabon",
+  "icon": "icon.png",
+  "homepage": "https://marketplace.visualstudio.com/items?itemName=jixabon.lando-ui",
   "repository": {
     "type": "git",
     "url": "https://github.com/Jixabon/lando-ui.git"
