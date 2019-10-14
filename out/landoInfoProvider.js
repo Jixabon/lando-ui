@@ -14,7 +14,6 @@ class LandoInfoProvider {
         this.lando = new lando_1.Lando(context);
         this.workspaceFolderPath = vscode_1.workspace.workspaceFolders ? vscode_1.workspace.workspaceFolders[0].uri.fsPath : '';
         this.parseTree();
-        console.log(this.tree);
     }
     refresh(offset) {
         this.parseTree();
@@ -77,7 +76,6 @@ class LandoInfoProvider {
             }
             else {
                 const property = node.parent.children ? node.parent.children[0].value.toString() : '';
-                console.log(property);
                 if (node.type === 'array' || node.type === 'object') {
                     if (node.type === 'object') {
                         return '{ } ' + property;
@@ -87,7 +85,6 @@ class LandoInfoProvider {
                     }
                 }
                 const value = node.value.toString();
-                // return isNaN(property) ? `${property}: ${value}` : `${value}`;
                 return `${property}: ${value}`;
             }
         }

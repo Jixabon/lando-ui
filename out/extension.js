@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_1 = require("vscode");
 const child_process_1 = require("child_process");
+const yaml = require("yaml");
+const fs = require("fs");
 const json = require("jsonc-parser");
 const lando_1 = require("./lando");
 const landoInfoProvider_1 = require("./landoInfoProvider");
@@ -22,8 +24,8 @@ function activate(context) {
     context.subscriptions.push(outputChannel);
     let lando = new lando_1.Lando(context, toggleButton, outputChannel);
     workspaceFolderPath = vscode_1.workspace.workspaceFolders ? vscode_1.workspace.workspaceFolders[0].uri.fsPath : '';
-    // landoAppConfig = yaml.parse(fs.readFileSync(workspaceFolderPath + '/.lando.yml', 'utf8'));
-    // currentAppName = landoAppConfig.name.replace(/[-_]/g, '');
+    landoAppConfig = yaml.parse(fs.readFileSync(workspaceFolderPath + '/.lando.yml', 'utf8'));
+    currentAppName = landoAppConfig.name.replace(/[-_]/g, '');
     child_process_1.exec('lando version', (error, stdout, stderr) => {
         if (error) {
             vscode_1.window.showErrorMessage('Please make sure that lando is installed correctly. ' + stderr);
