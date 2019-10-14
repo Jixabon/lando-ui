@@ -11,8 +11,6 @@ export class Lando {
     this.outputChannel = outputChannel;
   }
 
-  public init() {}
-
   public start(dir: string): void {
     const child = exec('lando start', { cwd: dir });
     child.stdout.on('data', data => {
@@ -30,6 +28,7 @@ export class Lando {
         window.showInformationMessage('Your Lando app started successfully');
         this.toggleButton.text = 'Lando Stop';
         this.toggleButton.command = 'lando.stop';
+        commands.executeCommand('lando.info-refresh');
         commands.executeCommand('lando.list-refresh');
       }
       this.outputChannel.append(`${stripAnsi.default(data)}`);
@@ -61,6 +60,7 @@ export class Lando {
         window.showInformationMessage('Your Lando app stopped successfully');
         this.toggleButton.text = 'Lando Start';
         this.toggleButton.command = 'lando.start';
+        commands.executeCommand('lando.info-refresh');
         commands.executeCommand('lando.list-refresh');
       }
       this.outputChannel.append(`${stripAnsi.default(data)}`);
@@ -89,7 +89,6 @@ export class Lando {
       }
       return 'warn: Could not find app in this dir or a reasonable amount of directories about it';
     }
-    // return '{"appserver": ["Testing"]}';
   }
 
   public list(): string {
@@ -115,6 +114,9 @@ export class Lando {
       }
       if (data.includes('Lando containers have been spun down')) {
         window.showInformationMessage('Lando has been powered off started successfully');
+        this.toggleButton.text = 'Lando Start';
+        this.toggleButton.command = 'lando.start';
+        commands.executeCommand('lando.info-refresh');
         commands.executeCommand('lando.list-refresh');
       }
       this.outputChannel.append(`${stripAnsi.default(data)}`);

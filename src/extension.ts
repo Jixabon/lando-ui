@@ -1,17 +1,4 @@
-import {
-  window,
-  commands,
-  workspace,
-  OutputChannel,
-  ExtensionContext,
-  Terminal,
-  TextDocument,
-  Command,
-  Uri,
-  StatusBarAlignment,
-  StatusBarItem,
-  CommentThreadCollapsibleState
-} from 'vscode';
+import { window, commands, workspace, OutputChannel, ExtensionContext, StatusBarAlignment, StatusBarItem } from 'vscode';
 import { exec } from 'child_process';
 import * as yaml from 'yaml';
 import * as fs from 'fs';
@@ -42,9 +29,9 @@ export function activate(context: ExtensionContext) {
 
   workspaceFolderPath = workspace.workspaceFolders ? workspace.workspaceFolders[0].uri.fsPath : '';
 
-  // landoAppConfig = yaml.parse(fs.readFileSync(workspaceFolderPath + '/.lando.yml', 'utf8'));
+  landoAppConfig = yaml.parse(fs.readFileSync(workspaceFolderPath + '/.lando.yml', 'utf8'));
 
-  // currentAppName = landoAppConfig.name.replace(/[-_]/g, '');
+  currentAppName = landoAppConfig.name.replace(/[-_]/g, '');
 
   exec('lando version', (error: any, stdout: any, stderr: string) => {
     if (error) {
