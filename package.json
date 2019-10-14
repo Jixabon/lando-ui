@@ -6,6 +6,11 @@
   "publisher": "Jixabon",
   "icon": "icon.png",
   "homepage": "https://marketplace.visualstudio.com/items?itemName=jixabon.lando-ui",
+  "keywords": [
+    "lando",
+    "website",
+    "development"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Jixabon/lando-ui.git"

@@ -4,6 +4,8 @@
 
 Lando UI was designed so simplify the use of the lando development tool when inside VSCode. It adds quick button shortcuts and information panels that allow quick, 'no command' access to your current lando project, as well as other running projects/containers.
 
+Visit the tool's website at https://docs.lando.dev/
+
 <!-- \!\[feature X\]\(images/feature-x.png\) -->
 
 ## Requirements
@@ -34,6 +36,7 @@ To install lando and it's dependencies follow the [installation instruction](htt
 
 ## To Do
 
+- Add multi-root compatibility.
 - Clean up Lando Info and Lando List outputs to be more visually appealing and first glance understandable.
 - Make URLs Clickable in the Lando Info and List views.
 - Add button to stop projects in the Lando List view.
@@ -41,17 +44,4 @@ To install lando and it's dependencies follow the [installation instruction](htt
 
 ---
 
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-- Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-- Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-- Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-- [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-- [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+NOTICE: All logos and lando branded images are created and used from the creators of Lando.

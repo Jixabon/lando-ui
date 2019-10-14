@@ -9,6 +9,18 @@ All notable changes to the "lando-ui" extension will be documented in this file.
 - Add button to stop projects in the Lando List view.
 - Integrate more lando commands to the interface.
 
+## [0.1.2] - 2019-10-13
+
+### Added
+
+- Updating README.md to add notice about logos used.
+
+## [0.1.1] - 2019-10-13
+
+### Added
+
+- Updating README.md and package.json to include full description and marketplace icons and info.
+
 ## [0.1.0] - 2019-10-13
 
 ### Added
