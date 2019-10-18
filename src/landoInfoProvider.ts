@@ -1,6 +1,6 @@
-import { TreeDataProvider, ExtensionContext, TreeItem, TreeItemCollapsibleState, workspace, EventEmitter, Event } from 'vscode';
+import { TreeDataProvider, ExtensionContext, TreeItem, TreeItemCollapsibleState, EventEmitter, Event } from 'vscode';
+import { info, reformatInfo } from './lando';
 import * as json from 'jsonc-parser';
-import { Lando } from './lando';
 
 export class LandoInfoProvider implements TreeDataProvider<number> {
   private _onDidChangeTreeData: EventEmitter<number | null> = new EventEmitter<number | null>();
@@ -8,12 +8,10 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
 
   private text: string = '';
   private tree: any = {};
-  private workspaceFolderPath: string = '';
-  private lando: any = {};
+  private workspaceFolderPath: string;
 
-  constructor(context: ExtensionContext) {
-    this.lando = new Lando(context);
-    this.workspaceFolderPath = workspace.workspaceFolders ? workspace.workspaceFolders[0].uri.fsPath : '';
+  constructor(context: ExtensionContext, workspaceFolderPath: string) {
+    this.workspaceFolderPath = workspaceFolderPath;
     this.parseTree();
   }
 
@@ -27,7 +25,8 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
   }
 
   private parseTree(): void {
-    this.text = this.lando.info(this.workspaceFolderPath);
+    // this.text = reformatInfo(info(this.workspaceFolderPath));
+    this.text = info(this.workspaceFolderPath);
     this.tree = json.parseTree(this.text);
   }
 
@@ -60,11 +59,16 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
     const valueNode = json.findNodeAtLocation(this.tree, path);
     if (valueNode) {
       let hasChildren = valueNode.type === 'object' || valueNode.type === 'array';
+      let label = this.getLabel(valueNode);
       let treeItem: TreeItem = new TreeItem(
-        this.getLabel(valueNode),
-        hasChildren ? (valueNode.type === 'object' ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed) : TreeItemCollapsibleState.None
+        label,
+        hasChildren
+          ? valueNode.type === 'object' || valueNode.type === 'array'
+            ? TreeItemCollapsibleState.Expanded
+            : TreeItemCollapsibleState.Collapsed
+          : TreeItemCollapsibleState.None
       );
-      treeItem.contextValue = valueNode.type;
+      treeItem.contextValue = label.includes('http') ? 'link' : valueNode.type;
       return treeItem;
     }
     return {};

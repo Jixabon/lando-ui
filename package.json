@@ -28,19 +28,27 @@
   "contributes": {
     "commands": [
       {
-        "command": "lando.start",
+        "command": "lando-ui.init",
+        "title": "Lando Init"
+      },
+      {
+        "command": "lando-ui.start",
         "title": "Lando Start"
       },
       {
-        "command": "lando.stop",
+        "command": "lando-ui.stop",
         "title": "Lando Stop"
       },
       {
-        "command": "lando.poweroff",
+        "command": "lando-ui.restart",
+        "title": "Lando Restart"
+      },
+      {
+        "command": "lando-ui.poweroff",
         "title": "Lando Poweroff"
       },
       {
-        "command": "lando.info-refresh",
+        "command": "lando-ui.info-refresh",
         "title": "Refresh",
         "icon": {
           "light": "resources/light/refresh.svg",
@@ -48,7 +56,7 @@
         }
       },
       {
-        "command": "lando.list-refresh",
+        "command": "lando-ui.list-refresh",
         "title": "Refresh",
         "icon": {
           "light": "resources/light/refresh.svg",
@@ -56,7 +64,7 @@
         }
       },
       {
-        "command": "lando.info-refreshNode",
+        "command": "lando-ui.info-refreshNode",
         "title": "Refresh",
         "icon": {
           "light": "resources/light/refresh.svg",
@@ -64,11 +72,43 @@
         }
       },
       {
-        "command": "lando.list-refreshNode",
+        "command": "lando-ui.list-refreshNode",
         "title": "Refresh",
         "icon": {
           "light": "resources/light/refresh.svg",
           "dark": "resources/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "lando-ui.info-openURL",
+        "title": "Open in Browser",
+        "icon": {
+          "light": "resources/light/browser.svg",
+          "dark": "resources/dark/browser.svg"
+        }
+      },
+      {
+        "command": "lando-ui.list-openURL",
+        "title": "Open in Browser",
+        "icon": {
+          "light": "resources/light/browser.svg",
+          "dark": "resources/dark/browser.svg"
+        }
+      },
+      {
+        "command": "lando-ui.info-copy",
+        "title": "Copy to clipboard",
+        "icon": {
+          "light": "resources/light/clippy.svg",
+          "dark": "resources/dark/clippy.svg"
+        }
+      },
+      {
+        "command": "lando-ui.list-copy",
+        "title": "Copy to clipboard",
+        "icon": {
+          "light": "resources/light/clippy.svg",
+          "dark": "resources/dark/clippy.svg"
         }
       }
     ],
@@ -96,25 +136,46 @@
     "menus": {
       "view/title": [
         {
-          "command": "lando.start",
+          "command": "lando-ui.init",
           "when": "view == lando-info"
         },
         {
-          "command": "lando.stop",
+          "command": "lando-ui.start",
           "when": "view == lando-info"
         },
         {
-          "command": "lando.poweroff"
+          "command": "lando-ui.stop",
+          "when": "view == lando-info"
         },
         {
-          "command": "lando.info-refresh",
+          "command": "lando-ui.restart",
+          "when": "view == lando-info"
+        },
+        {
+          "command": "lando-ui.poweroff",
+          "when": "view == lando-info || view == lando-list"
+        },
+        {
+          "command": "lando-ui.info-refresh",
           "when": "view == lando-info",
           "group": "navigation"
         },
         {
-          "command": "lando.list-refresh",
+          "command": "lando-ui.list-refresh",
           "when": "view == lando-list",
           "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "lando-ui.info-openURL",
+          "when": "view == lando-info && viewItem == link",
+          "group": "inline"
+        },
+        {
+          "command": "lando-ui.list-openURL",
+          "when": "view == lando-list && viewItem == link",
+          "group": "inline"
         }
       ]
     }
@@ -141,9 +202,12 @@
     "webpack-cli": "^3.3.9"
   },
   "dependencies": {
+    "@types/copy-paste": "^1.1.30",
     "@types/yaml": "^1.2.0",
     "child_process": "^1.0.2",
+    "copy-paste": "^1.3.0",
     "jsonc-parser": "^0.4.2",
+    "open": "^7.0.0",
     "strip-ansi": "^5.2.0",
     "vscode-nls": "^4.1.1",
     "yaml": "^1.6.0"

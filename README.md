@@ -4,7 +4,7 @@
 
 Lando UI was designed so simplify the use of the lando development tool when inside VSCode. It adds quick button shortcuts and information panels that allow quick, 'no command' access to your current lando project, as well as other running projects/containers.
 
-Visit the tool's website at https://docs.lando.dev/
+Visit the tool's website at https://lando.dev/
 
 <!-- \!\[feature X\]\(images/feature-x.png\) -->
 
@@ -21,6 +21,19 @@ To install lando and it's dependencies follow the [installation instruction](htt
 <!-- ## Known Issues -->
 
 ## Release Notes
+
+### v0.2.0
+
+### Added
+
+- Button to open links in info and list views in the system default browser.
+- Lando restart, Lando poweroff and Lando init to available commands.
+
+### Fixed
+
+- Improved .lando.yml file detection and error handling.
+- Now checks lando version and enforces requirement.
+- General clean up of code and refactoring.
 
 ### v0.1.3
 
@@ -44,7 +57,6 @@ To install lando and it's dependencies follow the [installation instruction](htt
 
 - Add multi-root compatibility.
 - Clean up Lando Info and Lando List outputs to be more visually appealing and first glance understandable.
-- Make URLs Clickable in the Lando Info and List views.
 - Add button to stop projects in the Lando List view.
 - Integrate more lando commands to the interface.
 

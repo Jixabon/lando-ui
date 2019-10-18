@@ -9,6 +9,19 @@ All notable changes to the "lando-ui" extension will be documented in this file.
 - Add button to stop projects in the Lando List view.
 - Integrate more lando commands to the interface.
 
+## [0.2.0] - 2019-10-14
+
+### Added
+
+- Button to open links in info and list views in the system default browser.
+- Lando restart, Lando poweroff and Lando init to available commands.
+
+### Fixed
+
+- Improved .lando.yml file detection and error handling.
+- Now checks lando version and enforces requirement.
+- General clean up of code and refactoring.
+
 ## [0.1.3] - 2019-10-14
 
 ### Fixed

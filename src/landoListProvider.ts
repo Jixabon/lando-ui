@@ -1,6 +1,6 @@
 import { TreeDataProvider, ExtensionContext, TreeItem, TreeItemCollapsibleState, EventEmitter, Event } from 'vscode';
+import { list } from './lando';
 import * as json from 'jsonc-parser';
-import { Lando } from './lando';
 
 export class LandoListProvider implements TreeDataProvider<number> {
   private _onDidChangeTreeData: EventEmitter<number | null> = new EventEmitter<number | null>();
@@ -8,10 +8,8 @@ export class LandoListProvider implements TreeDataProvider<number> {
 
   private text: string = '';
   private tree: any = {};
-  private lando: any = {};
 
   constructor(context: ExtensionContext) {
-    this.lando = new Lando(context);
     this.parseTree();
   }
 
@@ -25,7 +23,7 @@ export class LandoListProvider implements TreeDataProvider<number> {
   }
 
   private parseTree(): void {
-    this.text = this.lando.list();
+    this.text = list();
     this.tree = json.parseTree(this.text);
   }
 
@@ -60,7 +58,11 @@ export class LandoListProvider implements TreeDataProvider<number> {
       let hasChildren = valueNode.type === 'object' || valueNode.type === 'array';
       let treeItem: TreeItem = new TreeItem(
         this.getLabel(valueNode),
-        hasChildren ? (valueNode.type === 'object' ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed) : TreeItemCollapsibleState.None
+        hasChildren
+          ? valueNode.type === 'object'
+            ? TreeItemCollapsibleState.Expanded
+            : TreeItemCollapsibleState.Collapsed
+          : TreeItemCollapsibleState.None
       );
       treeItem.contextValue = valueNode.type;
       return treeItem;
