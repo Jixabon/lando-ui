@@ -40,6 +40,14 @@
         "title": "Lando Stop"
       },
       {
+        "command": "lando-ui.stopService",
+        "title": "Lando Stop",
+        "icon": {
+          "light": "resources/light/primitive_square.svg",
+          "dark": "resources/dark/primitive_square.svg"
+        }
+      },
+      {
         "command": "lando-ui.restart",
         "title": "Lando Restart"
       },
@@ -173,8 +181,8 @@
           "group": "inline"
         },
         {
-          "command": "lando-ui.list-openURL",
-          "when": "view == lando-list && viewItem == link",
+          "command": "lando-ui.stopService",
+          "when": "view == lando-list && viewItem == service",
           "group": "inline"
         }
       ]

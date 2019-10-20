@@ -1,5 +1,5 @@
 import { TreeDataProvider, ExtensionContext, TreeItem, TreeItemCollapsibleState, EventEmitter, Event } from 'vscode';
-import { list } from './lando';
+import { list, reformatList } from './lando';
 import * as json from 'jsonc-parser';
 
 export class LandoListProvider implements TreeDataProvider<number> {
@@ -23,21 +23,25 @@ export class LandoListProvider implements TreeDataProvider<number> {
   }
 
   private parseTree(): void {
-    this.text = list();
+    this.text = reformatList(list());
     this.tree = json.parseTree(this.text);
+  }
+
+  getNode(offset: number): json.Node {
+    const path = json.getLocation(this.text, offset).path;
+    return json.findNodeAtLocation(this.tree, path);
   }
 
   getChildren(offset?: number): Thenable<number[]> {
     if (offset) {
-      const path = json.getLocation(this.text, offset).path;
-      const node = json.findNodeAtLocation(this.tree, path);
+      var node = this.getNode(offset);
       return Promise.resolve(this.getChildrenOffsets(node));
     } else {
       return Promise.resolve(this.tree ? this.getChildrenOffsets(this.tree) : []);
     }
   }
 
-  private getChildrenOffsets(node: json.Node): number[] {
+  getChildrenOffsets(node: json.Node): number[] {
     const offsets: number[] = [];
     if (node.children) {
       for (const child of node.children) {
@@ -56,15 +60,17 @@ export class LandoListProvider implements TreeDataProvider<number> {
     const valueNode = json.findNodeAtLocation(this.tree, path);
     if (valueNode) {
       let hasChildren = valueNode.type === 'object' || valueNode.type === 'array';
+      let label: string = this.getLabel(valueNode);
       let treeItem: TreeItem = new TreeItem(
-        this.getLabel(valueNode),
+        label,
         hasChildren
           ? valueNode.type === 'object'
             ? TreeItemCollapsibleState.Expanded
             : TreeItemCollapsibleState.Collapsed
           : TreeItemCollapsibleState.None
       );
-      treeItem.contextValue = valueNode.type;
+      treeItem.contextValue = label.includes('service_') ? 'service' : valueNode.type;
+      treeItem.label = treeItem.label ? treeItem.label.replace('service_', '') : treeItem.label;
       return treeItem;
     }
     return {};
@@ -73,23 +79,22 @@ export class LandoListProvider implements TreeDataProvider<number> {
   private getLabel(node: json.Node): string {
     if (node.parent) {
       if (node.parent.type === 'array') {
-        let prefix = node.parent.children ? node.parent.children.indexOf(node).toString() : '';
+        let prefix: any = node.parent.children ? node.parent.children.indexOf(node).toString() : '';
         if (node.type === 'object') {
           return prefix + ':{ }';
         }
         if (node.type === 'array') {
           return prefix + ':[ ]';
         }
-        return prefix + ':' + node.value.toString();
+        return isNaN(prefix) ? prefix + ':' + node.value.toString() : node.value.toString();
       } else {
         const property = node.parent.children ? node.parent.children[0].value.toString() : '';
-        if (node.type === 'array' || node.type === 'object') {
-          if (node.type === 'object') {
-            return '{ } ' + property;
-          }
-          if (node.type === 'array') {
-            return '[ ] ' + property;
-          }
+        if (node.type === 'object') {
+          // return '{ } ' + property;
+          return property;
+        }
+        if (node.type === 'array') {
+          return '[ ] ' + property;
         }
         const value = node.value;
         return `${property}: ${value}`;

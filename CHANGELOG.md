@@ -4,17 +4,27 @@ All notable changes to the "lando-ui" extension will be documented in this file.
 
 ## [Unreleased]
 
-- Clean up Lando Info and Lando List outputs to be more visually appealing and first glance understandable.
-- Make URLs Clickable in the Lando Info and List views.
-- Add button to stop projects in the Lando List view.
-- Integrate more lando commands to the interface.
+- Add button to copy values in Lando Info and Lando List views.
+- Add config setting to turn off auto show of command output.
+- Add db-export and db-import commands.
+- Add config setting for db-export and db-import default path.
+- Add Lando Destroy command.
+- Add Lando Rebuild command.
 
-## [0.2.0] - 2019-10-14
+## [0.3.0] - 2019-10-19
+
+### Added
+
+- Button to stop other currently running projects in the Lando List view.
+- Clean up Lando Info and Lando List outputs to be more visually appealing and first glance understandable.
+
+## [0.2.0] - 2019-10-17
 
 ### Added
 
 - Button to open links in info and list views in the system default browser.
 - Lando restart, Lando poweroff and Lando init to available commands.
+- Output auto shows when Start/Stop commands have been run. (config option will be added soon if this is not the desired functionality)
 
 ### Fixed
 

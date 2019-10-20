@@ -1,5 +1,5 @@
 import { window, commands } from 'vscode';
-import { outputChannel } from './extension';
+import { outputChannel, getAppNameFromAppConfig, getLandoFile, getCurrentAppName } from './extension';
 import { exec, execSync } from 'child_process';
 import * as json from 'jsonc-parser';
 import * as stripAnsi from 'strip-ansi';
@@ -41,21 +41,21 @@ export function start(dir: string): void {
   });
 }
 
-export function stop(dir: string): void {
+export function stop(dir: string, isCurrentApp: boolean = true): void {
   outputChannel.show();
   const child = exec('lando stop', { cwd: dir });
   child.stdout.on('data', data => {
     if (data.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
       window.showWarningMessage('Please initiate a lando project: ' + data);
-      setButtonTo('init');
+      if (isCurrentApp) setButtonTo('init');
     }
     if (data.includes('Stopping app')) {
       window.showInformationMessage('Stopping your Lando app');
-      setButtonTo('stopping');
+      if (isCurrentApp) setButtonTo('stopping');
     }
     if (data.includes('App stopped')) {
       window.showInformationMessage('Your Lando app stopped successfully');
-      setButtonTo('start');
+      if (isCurrentApp) setButtonTo('start');
       commands.executeCommand('lando-ui.info-refresh');
       commands.executeCommand('lando-ui.list-refresh');
     }
@@ -69,6 +69,22 @@ export function stop(dir: string): void {
     outputChannel.appendLine('child process exited with ' + `code ${code} and signal ${signal}`);
     outputChannel.appendLine('-----------------------');
   });
+}
+
+export function stopService(offset: number, provider: any): void {
+  var landoFile = '';
+  var project = provider.getNode(offset);
+  var service = provider.getNode(provider.getChildrenOffsets(project)[0]);
+  provider.getChildrenOffsets(service).forEach((offset: number) => {
+    var prop = provider.getNode(offset);
+    if (prop.parent.children[0].value == 'src') {
+      landoFile = provider.getNode(provider.getChildrenOffsets(prop)[0]).value;
+    }
+  });
+  var appName = getAppNameFromAppConfig(getLandoFile(landoFile));
+
+  var dir = landoFile.replace('/.lando.yml', '');
+  stop(dir, appName == getCurrentAppName());
 }
 
 export function restart(dir: string): void {
@@ -161,7 +177,30 @@ export function version(): string {
 }
 
 export function reformatInfo(info: string): string {
-  // ToDo
+  var newInfo: { [k: string]: any } = {};
   var infoJson = json.parse(info);
-  return info;
+  infoJson.forEach((element: any) => {
+    var service = element.service;
+    delete element.service;
+    newInfo[service] = element;
+  });
+  return JSON.stringify(newInfo);
+}
+
+export function reformatList(list: string): string {
+  var listJson = json.parse(list);
+  var prop: any;
+  for (prop in listJson) {
+    if (listJson.hasOwnProperty(prop)) {
+      var services: { [k: string]: any } = {};
+      listJson[prop].forEach((element: any) => {
+        var service = element.service;
+        delete element.service;
+        services[service] = element;
+      });
+      listJson['service_' + prop] = services;
+      delete listJson[prop];
+    }
+  }
+  return JSON.stringify(listJson);
 }

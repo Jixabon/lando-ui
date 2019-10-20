@@ -25,8 +25,7 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
   }
 
   private parseTree(): void {
-    // this.text = reformatInfo(info(this.workspaceFolderPath));
-    this.text = info(this.workspaceFolderPath);
+    this.text = reformatInfo(info(this.workspaceFolderPath));
     this.tree = json.parseTree(this.text);
   }
 
@@ -87,13 +86,12 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
         return isNaN(prefix) ? prefix + ':' + node.value.toString() : node.value.toString();
       } else {
         const property = node.parent.children ? node.parent.children[0].value.toString() : '';
-        if (node.type === 'array' || node.type === 'object') {
-          if (node.type === 'object') {
-            return '{ } ' + property;
-          }
-          if (node.type === 'array') {
-            return '[ ] ' + property;
-          }
+        if (node.type === 'object') {
+          // return '{ } ' + property;
+          return property;
+        }
+        if (node.type === 'array') {
+          return '[ ] ' + property;
         }
         const value = node.value.toString();
         return `${property}: ${value}`;

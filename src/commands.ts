@@ -1,8 +1,6 @@
 import { window } from 'vscode';
 import { toggleButton } from './extension';
 import { list } from './lando';
-import * as yaml from 'yaml';
-import * as fs from 'fs';
 import * as json from 'jsonc-parser';
 import * as open from 'open';
 import * as ncp from 'copy-paste';
@@ -54,14 +52,6 @@ export function checkAppRunning(appName: string) {
   return false;
 }
 
-export function getAppConfig(landoFilePath: string): any {
-  return yaml.parse(fs.readFileSync(landoFilePath, 'utf8'));
-}
-
-export function getAppName(landoAppConfig: any): string {
-  return landoAppConfig ? landoAppConfig.name.replace(/[-_]/g, '') : '';
-}
-
 export function setButtonTo(mode: string) {
   switch (mode) {
     case 'start':
@@ -80,12 +70,22 @@ export function setButtonTo(mode: string) {
       break;
 
     case 'stopping':
-      toggleButton.text = 'Lando Stopping';
+      toggleButton.text = 'Lando Stopping...';
       toggleButton.command = '';
       break;
 
     case 'restarting':
       toggleButton.text = 'Lando Restarting..';
+      toggleButton.command = '';
+      break;
+
+    case 'rebuilding':
+      toggleButton.text = 'Lando Rebuilding..';
+      toggleButton.command = '';
+      break;
+
+    case 'destroying':
+      toggleButton.text = 'Lando Destroying..';
       toggleButton.command = '';
       break;
 

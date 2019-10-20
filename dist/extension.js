@@ -7830,8 +7830,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_1 = __webpack_require__(/*! vscode */ "vscode");
 const extension_1 = __webpack_require__(/*! ./extension */ "./src/extension.ts");
 const lando_1 = __webpack_require__(/*! ./lando */ "./src/lando.ts");
-const yaml = __webpack_require__(/*! yaml */ "./node_modules/yaml/index.js");
-const fs = __webpack_require__(/*! fs */ "fs");
 const json = __webpack_require__(/*! jsonc-parser */ "jsonc-parser");
 const open = __webpack_require__(/*! open */ "./node_modules/open/index.js");
 function openURL(url) {
@@ -7882,14 +7880,6 @@ function checkAppRunning(appName) {
     return false;
 }
 exports.checkAppRunning = checkAppRunning;
-function getAppConfig(landoFilePath) {
-    return yaml.parse(fs.readFileSync(landoFilePath, 'utf8'));
-}
-exports.getAppConfig = getAppConfig;
-function getAppName(landoAppConfig) {
-    return landoAppConfig ? landoAppConfig.name.replace(/[-_]/g, '') : '';
-}
-exports.getAppName = getAppName;
 function setButtonTo(mode) {
     switch (mode) {
         case 'start':
@@ -7905,11 +7895,19 @@ function setButtonTo(mode) {
             extension_1.toggleButton.command = 'lando-ui.stop';
             break;
         case 'stopping':
-            extension_1.toggleButton.text = 'Lando Stopping';
+            extension_1.toggleButton.text = 'Lando Stopping...';
             extension_1.toggleButton.command = '';
             break;
         case 'restarting':
             extension_1.toggleButton.text = 'Lando Restarting..';
+            extension_1.toggleButton.command = '';
+            break;
+        case 'rebuilding':
+            extension_1.toggleButton.text = 'Lando Rebuilding..';
+            extension_1.toggleButton.command = '';
+            break;
+        case 'destroying':
+            extension_1.toggleButton.text = 'Lando Destroying..';
             extension_1.toggleButton.command = '';
             break;
         case 'init':
@@ -7938,6 +7936,7 @@ exports.setButtonTo = setButtonTo;
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_1 = __webpack_require__(/*! vscode */ "vscode");
 const fs = __webpack_require__(/*! fs */ "fs");
+const yaml = __webpack_require__(/*! yaml */ "./node_modules/yaml/index.js");
 const lando = __webpack_require__(/*! ./lando */ "./src/lando.ts");
 const commands_1 = __webpack_require__(/*! ./commands */ "./src/commands.ts");
 const landoInfoProvider_1 = __webpack_require__(/*! ./landoInfoProvider */ "./src/landoInfoProvider.ts");
@@ -7976,8 +7975,8 @@ function activate(context) {
         // list panel commands
         registerCommand('lando-ui.list-refresh', () => landoListProvider.refresh()),
         registerCommand('lando-ui.list-refreshNode', offset => landoListProvider.refresh(offset)),
-        registerCommand('lando-ui.list-openURL', offset => commands_1.openTreeItem(offset, landoListProvider)),
-        registerCommand('lando-ui.list-copy', offset => commands_1.copyTreeItem(offset, landoListProvider))
+        registerCommand('lando-ui.list-copy', offset => commands_1.copyTreeItem(offset, landoListProvider)),
+        registerCommand('lando-ui.stopService', offset => lando.stopService(offset, landoListProvider))
     ]);
     // ----------------- Check version of lando (or if it's installed) -----------------
     if (commands_1.checkVersion(lando.version())) {
@@ -7989,7 +7988,7 @@ function activate(context) {
     // ----------------- Fetch lando file and grab app name from it -----------------
     let landoFilePath = exports.workspaceFolderPath + '/.lando.yml';
     if (fs.existsSync(landoFilePath)) {
-        updateAppConfig(landoFilePath);
+        updateCurrentAppConfig(landoFilePath);
     }
     else {
         commands_1.setButtonTo('init');
@@ -7998,7 +7997,7 @@ function activate(context) {
     context.subscriptions.push(watcher);
     watcher.onDidCreate(uri => {
         if (uri.fsPath.includes('.lando.yml')) {
-            updateAppConfig(landoFilePath);
+            updateCurrentAppConfig(landoFilePath);
             vscode_1.commands.executeCommand('lando-ui.info-refresh');
             commands_1.setButtonTo('start');
             if (commands_1.checkAppRunning(currentAppName)) {
@@ -8008,7 +8007,7 @@ function activate(context) {
     });
     watcher.onDidChange(uri => {
         if (uri.fsPath.includes('.lando.yml')) {
-            updateAppConfig(landoFilePath);
+            updateCurrentAppConfig(landoFilePath);
             vscode_1.commands.executeCommand('lando-ui.info-refresh');
         }
     });
@@ -8024,11 +8023,27 @@ function activate(context) {
     }
 }
 exports.activate = activate;
-function updateAppConfig(landoFilePath) {
-    landoAppConfig = commands_1.getAppConfig(landoFilePath);
-    currentAppName = commands_1.getAppName(landoAppConfig);
+function getLandoFile(filePath) {
+    return yaml.parse(fs.readFileSync(filePath, 'utf8'));
 }
-exports.updateAppConfig = updateAppConfig;
+exports.getLandoFile = getLandoFile;
+function getAppNameFromAppConfig(appConfig) {
+    return appConfig ? appConfig.name.replace(/[-_]/g, '') : '';
+}
+exports.getAppNameFromAppConfig = getAppNameFromAppConfig;
+function updateCurrentAppConfig(landoFilePath) {
+    landoAppConfig = getLandoFile(landoFilePath);
+    currentAppName = getAppNameFromAppConfig(landoAppConfig);
+}
+exports.updateCurrentAppConfig = updateCurrentAppConfig;
+function getCurrentAppConfig() {
+    return landoAppConfig;
+}
+exports.getCurrentAppConfig = getCurrentAppConfig;
+function getCurrentAppName() {
+    return currentAppName;
+}
+exports.getCurrentAppName = getCurrentAppName;
 
 
 /***/ }),
@@ -8085,21 +8100,24 @@ function start(dir) {
     });
 }
 exports.start = start;
-function stop(dir) {
+function stop(dir, isCurrentApp = true) {
     extension_1.outputChannel.show();
     const child = child_process_1.exec('lando stop', { cwd: dir });
     child.stdout.on('data', data => {
         if (data.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
             vscode_1.window.showWarningMessage('Please initiate a lando project: ' + data);
-            commands_1.setButtonTo('init');
+            if (isCurrentApp)
+                commands_1.setButtonTo('init');
         }
         if (data.includes('Stopping app')) {
             vscode_1.window.showInformationMessage('Stopping your Lando app');
-            commands_1.setButtonTo('stopping');
+            if (isCurrentApp)
+                commands_1.setButtonTo('stopping');
         }
         if (data.includes('App stopped')) {
             vscode_1.window.showInformationMessage('Your Lando app stopped successfully');
-            commands_1.setButtonTo('start');
+            if (isCurrentApp)
+                commands_1.setButtonTo('start');
             vscode_1.commands.executeCommand('lando-ui.info-refresh');
             vscode_1.commands.executeCommand('lando-ui.list-refresh');
         }
@@ -8115,6 +8133,21 @@ function stop(dir) {
     });
 }
 exports.stop = stop;
+function stopService(offset, provider) {
+    var landoFile = '';
+    var project = provider.getNode(offset);
+    var service = provider.getNode(provider.getChildrenOffsets(project)[0]);
+    provider.getChildrenOffsets(service).forEach((offset) => {
+        var prop = provider.getNode(offset);
+        if (prop.parent.children[0].value == 'src') {
+            landoFile = provider.getNode(provider.getChildrenOffsets(prop)[0]).value;
+        }
+    });
+    var appName = extension_1.getAppNameFromAppConfig(extension_1.getLandoFile(landoFile));
+    var dir = landoFile.replace('/.lando.yml', '');
+    stop(dir, appName == extension_1.getCurrentAppName());
+}
+exports.stopService = stopService;
 function restart(dir) {
     extension_1.outputChannel.show();
     const child = child_process_1.exec('lando restart', { cwd: dir });
@@ -8204,11 +8237,34 @@ function version() {
 }
 exports.version = version;
 function reformatInfo(info) {
-    // ToDo
+    var newInfo = {};
     var infoJson = json.parse(info);
-    return info;
+    infoJson.forEach((element) => {
+        var service = element.service;
+        delete element.service;
+        newInfo[service] = element;
+    });
+    return JSON.stringify(newInfo);
 }
 exports.reformatInfo = reformatInfo;
+function reformatList(list) {
+    var listJson = json.parse(list);
+    var prop;
+    for (prop in listJson) {
+        if (listJson.hasOwnProperty(prop)) {
+            var services = {};
+            listJson[prop].forEach((element) => {
+                var service = element.service;
+                delete element.service;
+                services[service] = element;
+            });
+            listJson['service_' + prop] = services;
+            delete listJson[prop];
+        }
+    }
+    return JSON.stringify(listJson);
+}
+exports.reformatList = reformatList;
 
 
 /***/ }),
@@ -8245,8 +8301,7 @@ class LandoInfoProvider {
         }
     }
     parseTree() {
-        // this.text = reformatInfo(info(this.workspaceFolderPath));
-        this.text = lando_1.info(this.workspaceFolderPath);
+        this.text = lando_1.reformatInfo(lando_1.info(this.workspaceFolderPath));
         this.tree = json.parseTree(this.text);
     }
     getChildren(offset) {
@@ -8302,13 +8357,12 @@ class LandoInfoProvider {
             }
             else {
                 const property = node.parent.children ? node.parent.children[0].value.toString() : '';
-                if (node.type === 'array' || node.type === 'object') {
-                    if (node.type === 'object') {
-                        return '{ } ' + property;
-                    }
-                    if (node.type === 'array') {
-                        return '[ ] ' + property;
-                    }
+                if (node.type === 'object') {
+                    // return '{ } ' + property;
+                    return property;
+                }
+                if (node.type === 'array') {
+                    return '[ ] ' + property;
                 }
                 const value = node.value.toString();
                 return `${property}: ${value}`;
@@ -8353,13 +8407,16 @@ class LandoListProvider {
         }
     }
     parseTree() {
-        this.text = lando_1.list();
+        this.text = lando_1.reformatList(lando_1.list());
         this.tree = json.parseTree(this.text);
+    }
+    getNode(offset) {
+        const path = json.getLocation(this.text, offset).path;
+        return json.findNodeAtLocation(this.tree, path);
     }
     getChildren(offset) {
         if (offset) {
-            const path = json.getLocation(this.text, offset).path;
-            const node = json.findNodeAtLocation(this.tree, path);
+            var node = this.getNode(offset);
             return Promise.resolve(this.getChildrenOffsets(node));
         }
         else {
@@ -8384,12 +8441,14 @@ class LandoListProvider {
         const valueNode = json.findNodeAtLocation(this.tree, path);
         if (valueNode) {
             let hasChildren = valueNode.type === 'object' || valueNode.type === 'array';
-            let treeItem = new vscode_1.TreeItem(this.getLabel(valueNode), hasChildren
+            let label = this.getLabel(valueNode);
+            let treeItem = new vscode_1.TreeItem(label, hasChildren
                 ? valueNode.type === 'object'
                     ? vscode_1.TreeItemCollapsibleState.Expanded
                     : vscode_1.TreeItemCollapsibleState.Collapsed
                 : vscode_1.TreeItemCollapsibleState.None);
-            treeItem.contextValue = valueNode.type;
+            treeItem.contextValue = label.includes('service_') ? 'service' : valueNode.type;
+            treeItem.label = treeItem.label ? treeItem.label.replace('service_', '') : treeItem.label;
             return treeItem;
         }
         return {};
@@ -8404,17 +8463,16 @@ class LandoListProvider {
                 if (node.type === 'array') {
                     return prefix + ':[ ]';
                 }
-                return prefix + ':' + node.value.toString();
+                return isNaN(prefix) ? prefix + ':' + node.value.toString() : node.value.toString();
             }
             else {
                 const property = node.parent.children ? node.parent.children[0].value.toString() : '';
-                if (node.type === 'array' || node.type === 'object') {
-                    if (node.type === 'object') {
-                        return '{ } ' + property;
-                    }
-                    if (node.type === 'array') {
-                        return '[ ] ' + property;
-                    }
+                if (node.type === 'object') {
+                    // return '{ } ' + property;
+                    return property;
+                }
+                if (node.type === 'array') {
+                    return '[ ] ' + property;
                 }
                 const value = node.value;
                 return `${property}: ${value}`;

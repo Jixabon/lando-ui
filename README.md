@@ -6,7 +6,7 @@ Lando UI was designed so simplify the use of the lando development tool when ins
 
 Visit the tool's website at https://lando.dev/
 
-<!-- \!\[feature X\]\(images/feature-x.png\) -->
+![Lando UI Overview](media/screenshot.png)
 
 ## Requirements
 
@@ -22,14 +22,22 @@ To install lando and it's dependencies follow the [installation instruction](htt
 
 ## Release Notes
 
+### v0.3.0
+
+#### Added
+
+- Button to stop other currently running projects in the Lando List view.
+- Clean up Lando Info and Lando List outputs to be more visually appealing and first glance understandable.
+
 ### v0.2.0
 
-### Added
+#### Added
 
 - Button to open links in info and list views in the system default browser.
 - Lando restart, Lando poweroff and Lando init to available commands.
+- Output auto shows when Start/Stop commands have been run. (config option will be added soon if this is not the desired functionality)
 
-### Fixed
+#### Fixed
 
 - Improved .lando.yml file detection and error handling.
 - Now checks lando version and enforces requirement.
@@ -56,9 +64,12 @@ To install lando and it's dependencies follow the [installation instruction](htt
 ## To Do
 
 - Add multi-root compatibility.
-- Clean up Lando Info and Lando List outputs to be more visually appealing and first glance understandable.
-- Add button to stop projects in the Lando List view.
-- Integrate more lando commands to the interface.
+- Add button to copy values in Lando Info and Lando List views.
+- Add config setting to turn off auto show of command output.
+- Add db-export and db-import commands.
+- Add config setting for db-export and db-import default path.
+- Add Lando Destroy command.
+- Add Lando Rebuild command.
 
 ---
 

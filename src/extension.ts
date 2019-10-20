@@ -1,15 +1,8 @@
 import { window, commands, workspace, ExtensionContext, StatusBarAlignment } from 'vscode';
 import * as fs from 'fs';
+import * as yaml from 'yaml';
 import * as lando from './lando';
-import {
-  openTreeItem,
-  copyTreeItem,
-  checkAppRunning,
-  checkVersion,
-  setButtonTo,
-  getAppConfig,
-  getAppName
-} from './commands';
+import { openTreeItem, copyTreeItem, checkAppRunning, checkVersion, setButtonTo } from './commands';
 import { LandoInfoProvider } from './landoInfoProvider';
 import { LandoListProvider } from './landoListProvider';
 
@@ -58,8 +51,8 @@ export function activate(context: ExtensionContext) {
       // list panel commands
       registerCommand('lando-ui.list-refresh', () => landoListProvider.refresh()),
       registerCommand('lando-ui.list-refreshNode', offset => landoListProvider.refresh(offset)),
-      registerCommand('lando-ui.list-openURL', offset => openTreeItem(offset, landoListProvider)),
-      registerCommand('lando-ui.list-copy', offset => copyTreeItem(offset, landoListProvider))
+      registerCommand('lando-ui.list-copy', offset => copyTreeItem(offset, landoListProvider)),
+      registerCommand('lando-ui.stopService', offset => lando.stopService(offset, landoListProvider))
     ]
   );
 
@@ -74,7 +67,7 @@ export function activate(context: ExtensionContext) {
   let landoFilePath = workspaceFolderPath + '/.lando.yml';
 
   if (fs.existsSync(landoFilePath)) {
-    updateAppConfig(landoFilePath);
+    updateCurrentAppConfig(landoFilePath);
   } else {
     setButtonTo('init');
   }
@@ -83,7 +76,7 @@ export function activate(context: ExtensionContext) {
   context.subscriptions.push(watcher);
   watcher.onDidCreate(uri => {
     if (uri.fsPath.includes('.lando.yml')) {
-      updateAppConfig(landoFilePath);
+      updateCurrentAppConfig(landoFilePath);
       commands.executeCommand('lando-ui.info-refresh');
       setButtonTo('start');
       if (checkAppRunning(currentAppName)) {
@@ -93,7 +86,7 @@ export function activate(context: ExtensionContext) {
   });
   watcher.onDidChange(uri => {
     if (uri.fsPath.includes('.lando.yml')) {
-      updateAppConfig(landoFilePath);
+      updateCurrentAppConfig(landoFilePath);
       commands.executeCommand('lando-ui.info-refresh');
     }
   });
@@ -110,7 +103,23 @@ export function activate(context: ExtensionContext) {
   }
 }
 
-export function updateAppConfig(landoFilePath: string) {
-  landoAppConfig = getAppConfig(landoFilePath);
-  currentAppName = getAppName(landoAppConfig);
+export function getLandoFile(filePath: string): any {
+  return yaml.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+export function getAppNameFromAppConfig(appConfig: any): string {
+  return appConfig ? appConfig.name.replace(/[-_]/g, '') : '';
+}
+
+export function updateCurrentAppConfig(landoFilePath: string) {
+  landoAppConfig = getLandoFile(landoFilePath);
+  currentAppName = getAppNameFromAppConfig(landoAppConfig);
+}
+
+export function getCurrentAppConfig() {
+  return landoAppConfig;
+}
+
+export function getCurrentAppName() {
+  return currentAppName;
 }
