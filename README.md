@@ -2,17 +2,17 @@
 
 ## Features
 
-Lando UI was designed so simplify the use of the lando development tool when inside VSCode. It adds quick button shortcuts and information panels that allow quick, 'no command' access to your current lando project, as well as other running projects/containers.
+Lando UI was designed so simplify the use of the Lando development tool when inside VSCode. It adds quick button shortcuts and information panels that allow quick, 'no command' access to your current Lando project, as well as other running projects/containers.
 
-Visit the tool's website at https://lando.dev/
+Visit the Lando's website at https://lando.dev/
 
 ![Lando UI Overview](media/screenshot.png)
 
 ## Requirements
 
-Lando UI requires that you have the lando too installed and at a minimum version of v3.0.0-rc13. The `--format json` option was added in this release and is required for the functionality of this extension.
+Lando UI requires that you have the lando tool installed and at a minimum version of v3.0.0-rc13. The `--format json` option was added in this release and is required for the functionality of this extension.
 
-To install lando and it's dependencies follow the [installation instruction](https://docs.lando.dev/basics/installation.html) on their website.
+To install lando and it's dependencies follow the [installation instructions](https://docs.lando.dev/basics/installation.html) on their website.
 
 <!-- ## Extension Settings -->
 
@@ -21,6 +21,13 @@ To install lando and it's dependencies follow the [installation instruction](htt
 <!-- ## Known Issues -->
 
 ## Release Notes
+
+### v0.3.1
+
+#### Fixed
+
+- Removed stop option from the '_global_' proxy container as you can not directly stop it.
+- Set all 1st level items in the List panel to start collapsed to give a simple list of what is running.
 
 ### v0.3.0
 

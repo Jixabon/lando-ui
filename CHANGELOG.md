@@ -11,6 +11,13 @@ All notable changes to the "lando-ui" extension will be documented in this file.
 - Add Lando Destroy command.
 - Add Lando Rebuild command.
 
+## [0.3.1] - 2019-10-20
+
+### Fixed
+
+- Removed stop option from the '_global_' proxy container as you can not directly stop it.
+- Set all 1st level items in the List panel to start collapsed to give a simple list of what is running.
+
 ## [0.3.0] - 2019-10-19
 
 ### Added

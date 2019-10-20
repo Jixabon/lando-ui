@@ -29,22 +29,25 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
     this.tree = json.parseTree(this.text);
   }
 
+  getNode(offset: number): json.Node {
+    const path = json.getLocation(this.text, offset).path;
+    return json.findNodeAtLocation(this.tree, path);
+  }
+
   getChildren(offset?: number): Thenable<number[]> {
     if (offset) {
-      const path = json.getLocation(this.text, offset).path;
-      const node = json.findNodeAtLocation(this.tree, path);
+      const node = this.getNode(offset);
       return Promise.resolve(this.getChildrenOffsets(node));
     } else {
       return Promise.resolve(this.tree ? this.getChildrenOffsets(this.tree) : []);
     }
   }
 
-  private getChildrenOffsets(node: json.Node): number[] {
+  getChildrenOffsets(node: json.Node): number[] {
     const offsets: number[] = [];
     if (node.children) {
       for (const child of node.children) {
-        const childPath = json.getLocation(this.text, child.offset).path;
-        const childNode = json.findNodeAtLocation(this.tree, childPath);
+        const childNode = this.getNode(child.offset);
         if (childNode) {
           offsets.push(childNode.offset);
         }
@@ -54,8 +57,7 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
   }
 
   getTreeItem(offset: number): TreeItem {
-    const path = json.getLocation(this.text, offset).path;
-    const valueNode = json.findNodeAtLocation(this.tree, path);
+    const valueNode = this.getNode(offset);
     if (valueNode) {
       let hasChildren = valueNode.type === 'object' || valueNode.type === 'array';
       let label = this.getLabel(valueNode);

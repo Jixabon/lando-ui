@@ -45,8 +45,7 @@ export class LandoListProvider implements TreeDataProvider<number> {
     const offsets: number[] = [];
     if (node.children) {
       for (const child of node.children) {
-        const childPath = json.getLocation(this.text, child.offset).path;
-        const childNode = json.findNodeAtLocation(this.tree, childPath);
+        const childNode = this.getNode(child.offset);
         if (childNode) {
           offsets.push(childNode.offset);
         }
@@ -56,8 +55,8 @@ export class LandoListProvider implements TreeDataProvider<number> {
   }
 
   getTreeItem(offset: number): TreeItem {
-    const path = json.getLocation(this.text, offset).path;
-    const valueNode = json.findNodeAtLocation(this.tree, path);
+    const valueNode = this.getNode(offset);
+    console.log(valueNode);
     if (valueNode) {
       let hasChildren = valueNode.type === 'object' || valueNode.type === 'array';
       let label: string = this.getLabel(valueNode);
@@ -69,8 +68,13 @@ export class LandoListProvider implements TreeDataProvider<number> {
             : TreeItemCollapsibleState.Collapsed
           : TreeItemCollapsibleState.None
       );
-      treeItem.contextValue = label.includes('service_') ? 'service' : valueNode.type;
-      treeItem.label = treeItem.label ? treeItem.label.replace('service_', '') : treeItem.label;
+      treeItem.contextValue = label.match(/^service_/) && !label.includes('_global_') ? 'service' : valueNode.type;
+      treeItem.label = treeItem.label ? treeItem.label.replace(/^service_/, '') : treeItem.label;
+
+      // special cases
+      if (treeItem.contextValue === 'service' || label.includes('_global_')) {
+        treeItem.collapsibleState = TreeItemCollapsibleState.Collapsed;
+      }
       return treeItem;
     }
     return {};
