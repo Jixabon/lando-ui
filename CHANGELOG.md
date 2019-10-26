@@ -10,6 +10,12 @@ All notable changes to the "lando-ui" extension will be documented in this file.
 - Add Lando Destroy command.
 - Add Lando Rebuild command.
 
+## [0.4.1] - 2019-10-26
+
+### Fixed
+
+- App not found message displaying wrong.
+
 ## [0.4.0] - 2019-10-26
 
 ### Added

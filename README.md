@@ -24,6 +24,12 @@ To install lando and it's dependencies follow the [installation instructions](ht
 
 ## Release Notes
 
+### v0.4.1
+
+#### Fixed
+
+- App not found message displaying wrong.
+
 ### v0.4.0
 
 #### Added

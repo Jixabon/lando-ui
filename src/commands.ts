@@ -68,7 +68,6 @@ export function addWorkspaceFolderName(jsonString: string): string {
   for (var element in parse) {
     newObject[element] = parse[element];
   }
-  console.log(JSON.stringify(parse));
   return JSON.stringify(newObject);
 }
 

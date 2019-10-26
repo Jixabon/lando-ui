@@ -27,8 +27,11 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
 
   private parseTree(): void {
     this.text = reformatInfo(info(getWorkspaceFolderPath()));
-    if (Object.keys(json.parse(this.text)).length <= 0) this.text = '["App Not Found"]';
-    this.text = addWorkspaceFolderName(this.text);
+    if (Object.keys(json.parse(this.text)).length <= 0) {
+      this.text = '["App Not Found"]';
+    } else {
+      this.text = addWorkspaceFolderName(this.text);
+    }
     this.tree = json.parseTree(this.text);
   }
 
