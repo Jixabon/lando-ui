@@ -1,4 +1,12 @@
-import { window, commands, workspace, ExtensionContext, StatusBarAlignment } from 'vscode';
+import {
+  window,
+  commands,
+  workspace,
+  ExtensionContext,
+  StatusBarAlignment,
+  ConfigurationTarget,
+  FileSystemWatcher
+} from 'vscode';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
 import * as lando from './lando';
@@ -6,35 +14,51 @@ import { openTreeItem, copyTreeItem, checkAppRunning, checkVersion, setButtonTo 
 import { LandoInfoProvider } from './landoInfoProvider';
 import { LandoListProvider } from './landoListProvider';
 
-export var workspaceFolderPath: string;
 export var toggleButton: any;
 export var outputChannel: any;
+export var watcher: FileSystemWatcher;
+var workspaceFolderPath: string;
 var landoAppConfig: any;
 var currentAppName: any;
+var firstStart = true;
 
 export function activate(context: ExtensionContext) {
-  // ----------------- Get workspace Folder -----------------
-  workspaceFolderPath = workspace.workspaceFolders ? workspace.workspaceFolders[0].uri.fsPath : '';
-
   // ----------------- Create Status Bar Item (button) -----------------
   toggleButton = window.createStatusBarItem(StatusBarAlignment.Right, 3);
   context.subscriptions.push(toggleButton);
   setButtonTo('start');
 
+  // ----------------- Check version of lando (or if it's installed) -----------------
+  if (checkVersion()) {
+    toggleButton.show();
+  } else {
+    window.showErrorMessage('Lando is not installed or you are not running the required version.');
+  }
+
   // ----------------- Create Output Channel -----------------
   outputChannel = window.createOutputChannel('Lando UI');
   context.subscriptions.push(outputChannel);
 
+  // ----------------- Get workspace Folder -----------------
+  determineWorkspaceFolder();
+
   // ----------------- Tree Providers -----------------
-  let landoInfoProvider: LandoInfoProvider = new LandoInfoProvider(context, workspaceFolderPath);
+  let landoInfoProvider: LandoInfoProvider = new LandoInfoProvider(context);
   let landoListProvider: LandoListProvider = new LandoListProvider(context);
-  window.registerTreeDataProvider('lando-info', landoInfoProvider);
-  window.registerTreeDataProvider('lando-list', landoListProvider);
+  let landoInfoView = window.createTreeView('lando-info', {
+    treeDataProvider: landoInfoProvider
+  });
+  let landoListView = window.createTreeView('lando-list', {
+    treeDataProvider: landoListProvider
+  });
 
   // ----------------- Registering commands -----------------
   let registerCommand = commands.registerCommand;
   context.subscriptions.push(
     ...[
+      // lando UI commands
+      registerCommand('lando-ui.pickWorkspaceFolder', () => pickWorkspaceFolder()),
+
       // lando commands
       registerCommand('lando-ui.init', () => lando.init()),
       registerCommand('lando-ui.start', () => lando.start(workspaceFolderPath)),
@@ -56,51 +80,55 @@ export function activate(context: ExtensionContext) {
     ]
   );
 
-  // ----------------- Check version of lando (or if it's installed) -----------------
-  if (checkVersion(lando.version())) {
-    toggleButton.show();
-  } else {
-    window.showErrorMessage('Lando is not installed or you are not running the required version.');
-  }
-
   // ----------------- Fetch lando file and grab app name from it -----------------
-  let landoFilePath = workspaceFolderPath + '/.lando.yml';
-
-  if (fs.existsSync(landoFilePath)) {
-    updateCurrentAppConfig(landoFilePath);
-  } else {
-    setButtonTo('init');
+  if (workspaceFolderPath) {
+    checkLandoFileExists(workspaceFolderPath + '/.lando.yml');
   }
 
-  var watcher = workspace.createFileSystemWatcher(workspaceFolderPath + '/*.yml');
+  startWatcher();
   context.subscriptions.push(watcher);
-  watcher.onDidCreate(uri => {
-    if (uri.fsPath.includes('.lando.yml')) {
-      updateCurrentAppConfig(landoFilePath);
-      commands.executeCommand('lando-ui.info-refresh');
-      setButtonTo('start');
-      if (checkAppRunning(currentAppName)) {
-        setButtonTo('stop');
-      }
-    }
-  });
-  watcher.onDidChange(uri => {
-    if (uri.fsPath.includes('.lando.yml')) {
-      updateCurrentAppConfig(landoFilePath);
-      commands.executeCommand('lando-ui.info-refresh');
-    }
-  });
-  watcher.onDidDelete(uri => {
-    if (!fs.existsSync(landoFilePath)) {
-      setButtonTo('init');
-      commands.executeCommand('lando-ui.info-refresh');
-    }
-  });
 
-  // -----------------Checking if current app is in the list of running containers -----------------
+  // ----------------- Checking if current app is in the list of running containers -----------------
   if (checkAppRunning(currentAppName)) {
     setButtonTo('stop');
   }
+
+  // ----------------- Watch for changes in configuration -----------------
+  workspace.onDidChangeConfiguration(() => {
+    determineWorkspaceFolder();
+  });
+  workspace.onDidChangeWorkspaceFolders(() => {
+    determineWorkspaceFolder();
+  });
+
+  firstStart = false;
+}
+
+export function checkLandoFileExists(landoFilePath: string): boolean {
+  if (fs.existsSync(landoFilePath)) {
+    updateCurrentAppConfig(landoFilePath);
+    commands.executeCommand('lando-ui.info-refresh');
+    setButtonTo('start');
+    if (checkAppRunning(currentAppName)) {
+      setButtonTo('stop');
+    }
+    return true;
+  } else {
+    commands.executeCommand('lando-ui.info-refresh');
+    setButtonTo('init');
+    return false;
+  }
+}
+
+export function isWorkspaceFolder(folderPath: string) {
+  var workspaceFolders = workspace.workspaceFolders ? workspace.workspaceFolders : [];
+  var isWorkspaceFolder = false;
+  workspaceFolders.forEach(folder => {
+    if (folderPath === folder.uri.fsPath) {
+      isWorkspaceFolder = true;
+    }
+  });
+  return isWorkspaceFolder;
 }
 
 export function getLandoFile(filePath: string): any {
@@ -116,10 +144,119 @@ export function updateCurrentAppConfig(landoFilePath: string) {
   currentAppName = getAppNameFromAppConfig(landoAppConfig);
 }
 
+export function pickWorkspaceFolder() {
+  window.showWorkspaceFolderPick().then(workspaceFolder => {
+    if (workspaceFolder) {
+      workspace
+        .getConfiguration('lando-ui.workspaceFolder')
+        .update('default', workspaceFolder.uri.fsPath, ConfigurationTarget.Workspace);
+    }
+  });
+}
+
+export function restartWorkspaceFolderDependents(newWorkspaceFolder: string) {
+  workspaceFolderPath = newWorkspaceFolder;
+  startWatcher();
+  checkLandoFileExists(workspaceFolderPath + '/.lando.yml');
+}
+
+export function startWatcher() {
+  if (watcher) {
+    watcher.dispose();
+  }
+  watcher = workspace.createFileSystemWatcher(workspaceFolderPath + '/*.yml');
+  watcher.onDidCreate(uri => {
+    if (uri.fsPath.includes('.lando.yml')) {
+      updateCurrentAppConfig(workspaceFolderPath + '/.lando.yml');
+      commands.executeCommand('lando-ui.info-refresh');
+      setButtonTo('start');
+      if (checkAppRunning(currentAppName)) {
+        setButtonTo('stop');
+      }
+    }
+  });
+  watcher.onDidChange(uri => {
+    if (uri.fsPath.includes('.lando.yml')) {
+      updateCurrentAppConfig(workspaceFolderPath + '/.lando.yml');
+      commands.executeCommand('lando-ui.info-refresh');
+      setButtonTo('start');
+      if (checkAppRunning(currentAppName)) {
+        setButtonTo('stop');
+      }
+    }
+  });
+  watcher.onDidDelete(uri => {
+    if (!fs.existsSync(workspaceFolderPath + '/.lando.yml')) {
+      setButtonTo('init');
+      commands.executeCommand('lando-ui.info-refresh');
+    }
+  });
+}
+
 export function getCurrentAppConfig() {
   return landoAppConfig;
 }
 
 export function getCurrentAppName() {
   return currentAppName;
+}
+
+export function getWorkspaceFolderPath() {
+  return workspaceFolderPath;
+}
+
+export function getWorkspaceFolderNameFromPath() {
+  var pathArray = getWorkspaceFolderPath().split('/');
+  return pathArray[getWorkspaceFolderPath().split('/').length - 1];
+}
+
+export function determineWorkspaceFolder() {
+  var defaultWorkspaceFolderPath: string | undefined = workspace
+    .getConfiguration('lando-ui.workspaceFolder')
+    .get('default');
+
+  if (defaultWorkspaceFolderPath != undefined && defaultWorkspaceFolderPath != '') {
+    if (isWorkspaceFolder(defaultWorkspaceFolderPath)) {
+      workspaceFolderPath = defaultWorkspaceFolderPath;
+      if (!firstStart) {
+        restartWorkspaceFolderDependents(defaultWorkspaceFolderPath);
+      }
+    } else if (Object.keys(workspace.workspaceFolders ? workspace.workspaceFolders : []).length > 1) {
+      setButtonTo('pick');
+      window
+        .showWarningMessage(
+          'Your current default Workspace folder does not exists in this Workspace. Please select one to be the default.',
+          ...['Select Default Folder']
+        )
+        .then(selection => {
+          if (selection == 'Select Default Folder') {
+            pickWorkspaceFolder();
+          }
+        });
+    } else {
+      workspaceFolderPath = workspace.workspaceFolders ? workspace.workspaceFolders[0].uri.fsPath : '';
+      if (defaultWorkspaceFolderPath != '') {
+        workspace.getConfiguration('lando-ui.workspaceFolder').update('default', '', ConfigurationTarget.Workspace);
+      }
+      commands.executeCommand('lando-ui.info-refresh');
+    }
+  } else if (Object.keys(workspace.workspaceFolders ? workspace.workspaceFolders : []).length > 1) {
+    setButtonTo('pick');
+    window
+      .showWarningMessage(
+        'There are multiple Workspace folders detected. Please select one to be the default.',
+        ...['Select Default Folder']
+      )
+      .then(selection => {
+        if (selection == 'Select Default Folder') {
+          pickWorkspaceFolder();
+        }
+      });
+  } else {
+    workspaceFolderPath = workspace.workspaceFolders ? workspace.workspaceFolders[0].uri.fsPath : '';
+    if (defaultWorkspaceFolderPath != '') {
+      workspace.getConfiguration('lando-ui.workspaceFolder').update('default', '', ConfigurationTarget.Workspace);
+    }
+    commands.executeCommand('lando-ui.info-refresh');
+  }
 }

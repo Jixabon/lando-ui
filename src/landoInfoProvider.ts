@@ -1,6 +1,8 @@
 import { TreeDataProvider, ExtensionContext, TreeItem, TreeItemCollapsibleState, EventEmitter, Event } from 'vscode';
+import { getWorkspaceFolderPath } from './extension';
 import { info, reformatInfo } from './lando';
 import * as json from 'jsonc-parser';
+import { addWorkspaceFolderName } from './commands';
 
 export class LandoInfoProvider implements TreeDataProvider<number> {
   private _onDidChangeTreeData: EventEmitter<number | null> = new EventEmitter<number | null>();
@@ -8,10 +10,9 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
 
   private text: string = '';
   private tree: any = {};
-  private workspaceFolderPath: string;
+  public title: string = '';
 
-  constructor(context: ExtensionContext, workspaceFolderPath: string) {
-    this.workspaceFolderPath = workspaceFolderPath;
+  constructor(context: ExtensionContext) {
     this.parseTree();
   }
 
@@ -25,7 +26,9 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
   }
 
   private parseTree(): void {
-    this.text = reformatInfo(info(this.workspaceFolderPath));
+    this.text = reformatInfo(info(getWorkspaceFolderPath()));
+    if (Object.keys(json.parse(this.text)).length <= 0) this.text = '["App Not Found"]';
+    this.text = addWorkspaceFolderName(this.text);
     this.tree = json.parseTree(this.text);
   }
 

@@ -24,6 +24,7 @@ export class LandoListProvider implements TreeDataProvider<number> {
 
   private parseTree(): void {
     this.text = reformatList(list());
+    if (Object.keys(json.parse(this.text)).length <= 0) this.text = '["No Running Services"]';
     this.tree = json.parseTree(this.text);
   }
 
@@ -56,7 +57,6 @@ export class LandoListProvider implements TreeDataProvider<number> {
 
   getTreeItem(offset: number): TreeItem {
     const valueNode = this.getNode(offset);
-    console.log(valueNode);
     if (valueNode) {
       let hasChildren = valueNode.type === 'object' || valueNode.type === 'array';
       let label: string = this.getLabel(valueNode);
@@ -68,11 +68,15 @@ export class LandoListProvider implements TreeDataProvider<number> {
             : TreeItemCollapsibleState.Collapsed
           : TreeItemCollapsibleState.None
       );
-      treeItem.contextValue = label.match(/^service_/) && !label.includes('_global_') ? 'service' : valueNode.type;
+      treeItem.contextValue = label.match(/^service_/)
+        ? label.includes('_global_')
+          ? 'service'
+          : 'app'
+        : valueNode.type;
       treeItem.label = treeItem.label ? treeItem.label.replace(/^service_/, '') : treeItem.label;
 
       // special cases
-      if (treeItem.contextValue === 'service' || label.includes('_global_')) {
+      if (treeItem.contextValue === 'app' || treeItem.contextValue === 'service') {
         treeItem.collapsibleState = TreeItemCollapsibleState.Collapsed;
       }
       return treeItem;

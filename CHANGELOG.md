@@ -5,11 +5,23 @@ All notable changes to the "lando-ui" extension will be documented in this file.
 ## [Unreleased]
 
 - Add button to copy values in Lando Info and Lando List views.
-- Add config setting to turn off auto show of command output.
 - Add db-export and db-import commands.
 - Add config setting for db-export and db-import default path.
 - Add Lando Destroy command.
 - Add Lando Rebuild command.
+
+## [0.4.0] - 2019-10-26
+
+### Added
+
+- Config setting to turn off auto show of command output.
+- Now handles multiple Workspace folders.
+- Message in List panel to show no running services.
+- Info Panel shows what workspace folder (if one) is being used.
+
+### Fixed
+
+- Reworked message when no app is found for the Info panel.
 
 ## [0.3.1] - 2019-10-20
 

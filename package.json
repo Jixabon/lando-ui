@@ -9,7 +9,8 @@
   "keywords": [
     "lando",
     "website",
-    "development"
+    "development",
+    "multi-root ready"
   ],
   "repository": {
     "type": "git",
@@ -26,7 +27,26 @@
   ],
   "main": "./dist/extension",
   "contributes": {
+    "configuration": {
+      "title": "Lando UI",
+      "properties": {
+        "lando-ui.output.autoShow": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto show command output when an App is started or stopped"
+        },
+        "lando-ui.workspaceFolder.default": {
+          "type": "string",
+          "scope": "machine-overridable",
+          "description": "Default workspace folder to be used if there are more than one folder in a workspace"
+        }
+      }
+    },
     "commands": [
+      {
+        "command": "lando-ui.pickWorkspaceFolder",
+        "title": "Change Folder"
+      },
       {
         "command": "lando-ui.init",
         "title": "Lando Init"
@@ -144,6 +164,10 @@
     "menus": {
       "view/title": [
         {
+          "command": "lando-ui.pickWorkspaceFolder",
+          "when": "view == lando-info"
+        },
+        {
           "command": "lando-ui.init",
           "when": "view == lando-info"
         },
@@ -182,7 +206,7 @@
         },
         {
           "command": "lando-ui.stopService",
-          "when": "view == lando-list && viewItem == service",
+          "when": "view == lando-list && viewItem == app",
           "group": "inline"
         }
       ]

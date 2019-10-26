@@ -3,7 +3,7 @@ import { outputChannel, getAppNameFromAppConfig, getLandoFile, getCurrentAppName
 import { exec, execSync } from 'child_process';
 import * as json from 'jsonc-parser';
 import * as stripAnsi from 'strip-ansi';
-import { setButtonTo } from './commands';
+import { setButtonTo, showOutput } from './commands';
 
 export function init(): void {
   var terminal = window.createTerminal('Lando Init');
@@ -12,7 +12,7 @@ export function init(): void {
 }
 
 export function start(dir: string): void {
-  outputChannel.show();
+  showOutput();
   const child = exec('lando start', { cwd: dir });
   child.stdout.on('data', data => {
     if (data.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
@@ -42,7 +42,7 @@ export function start(dir: string): void {
 }
 
 export function stop(dir: string, isCurrentApp: boolean = true): void {
-  outputChannel.show();
+  showOutput();
   const child = exec('lando stop', { cwd: dir });
   child.stdout.on('data', data => {
     if (data.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
@@ -73,8 +73,8 @@ export function stop(dir: string, isCurrentApp: boolean = true): void {
 
 export function stopService(offset: number, provider: any): void {
   var landoFile = '';
-  var project = provider.getNode(offset);
-  var service = provider.getNode(provider.getChildrenOffsets(project)[0]);
+  var app = provider.getNode(offset);
+  var service = provider.getNode(provider.getChildrenOffsets(app)[0]);
   provider.getChildrenOffsets(service).forEach((offset: number) => {
     var prop = provider.getNode(offset);
     if (prop.parent.children[0].value == 'src') {
@@ -88,7 +88,7 @@ export function stopService(offset: number, provider: any): void {
 }
 
 export function restart(dir: string): void {
-  outputChannel.show();
+  showOutput();
   const child = exec('lando restart', { cwd: dir });
   child.stdout.on('data', data => {
     if (data.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
@@ -118,7 +118,7 @@ export function restart(dir: string): void {
 }
 
 export function poweroff(): void {
-  outputChannel.show();
+  showOutput();
   const child = exec('lando poweroff', { encoding: 'utf8' });
   child.stdout.on('data', data => {
     if (data.includes('Spinning Lando containers down')) {
@@ -154,10 +154,9 @@ export function info(dir: string): string {
       e.toString().includes('Could not find app in this dir or a reasonable amount of directories above it') ||
       e.toString().includes("Cannot set property 'opts' of undefined")
     ) {
-      window.showWarningMessage('Could not find an app. Please initiate a lando project.');
-      return '["No app found"]';
+      return '[]';
     }
-    return '["No app found"]';
+    return '[]';
   }
 }
 

@@ -1,5 +1,7 @@
 # Lando UI
 
+Please leave a rating! Feedback is welcome!
+
 ## Features
 
 Lando UI was designed so simplify the use of the Lando development tool when inside VSCode. It adds quick button shortcuts and information panels that allow quick, 'no command' access to your current Lando project, as well as other running projects/containers.
@@ -21,6 +23,19 @@ To install lando and it's dependencies follow the [installation instructions](ht
 <!-- ## Known Issues -->
 
 ## Release Notes
+
+### v0.4.0
+
+#### Added
+
+- Config setting to turn off auto show of command output.
+- Now handles multiple Workspace folders.
+- Message in List panel to show no running services.
+- Info Panel shows what workspace folder (if one) is being used.
+
+#### Fixed
+
+- Reworked message when no app is found for the Info panel.
 
 ### v0.3.1
 
