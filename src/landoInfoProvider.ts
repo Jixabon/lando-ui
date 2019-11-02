@@ -10,7 +10,6 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
 
   private text: string = '';
   private tree: any = {};
-  public title: string = '';
 
   constructor(context: ExtensionContext) {
     this.parseTree();
@@ -75,7 +74,14 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
             : TreeItemCollapsibleState.Collapsed
           : TreeItemCollapsibleState.None
       );
-      treeItem.contextValue = label.includes('http') ? 'link' : valueNode.type;
+      if (label.match(/^service_/)) {
+        treeItem.contextValue = 'service';
+        treeItem.label = treeItem.label ? treeItem.label.replace(/^service_/, '') : treeItem.label;
+      } else if (label.includes('http')) {
+        treeItem.contextValue = 'link';
+      } else {
+        treeItem.contextValue = valueNode.type;
+      }
       return treeItem;
     }
     return {};

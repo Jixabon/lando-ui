@@ -4,11 +4,17 @@ All notable changes to the "lando-ui" extension will be documented in this file.
 
 ## [Unreleased]
 
-- Add button to copy values in Lando Info and Lando List views.
-- Add db-export and db-import commands.
-- Add config setting for db-export and db-import default path.
 - Add Lando Destroy command.
 - Add Lando Rebuild command.
+
+## [0.5.0] - 2019-11-02
+
+### Added
+
+- Button to copy values in Lando Info and Lando List views.
+- Button to ssh into a service in Lando Info panel.
+- db-export and db-import commands.
+- Config setting for db-export default path.
 
 ## [0.4.1] - 2019-10-26
 

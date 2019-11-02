@@ -10,7 +10,15 @@ import {
 import * as fs from 'fs';
 import * as yaml from 'yaml';
 import * as lando from './lando';
-import { openTreeItem, copyTreeItem, checkAppRunning, checkVersion, setButtonTo } from './commands';
+import {
+  openTreeItem,
+  copyTreeItem,
+  checkAppRunning,
+  checkVersion,
+  setButtonTo,
+  dbUserExport,
+  dbUserImport
+} from './commands';
 import { LandoInfoProvider } from './landoInfoProvider';
 import { LandoListProvider } from './landoListProvider';
 
@@ -65,12 +73,15 @@ export function activate(context: ExtensionContext) {
       registerCommand('lando-ui.stop', () => lando.stop(workspaceFolderPath)),
       registerCommand('lando-ui.restart', () => lando.restart(workspaceFolderPath)),
       registerCommand('lando-ui.poweroff', () => lando.poweroff()),
+      registerCommand('lando-ui.db-export', () => dbUserExport()),
+      registerCommand('lando-ui.db-import', () => dbUserImport()),
 
       // info panel commands
       registerCommand('lando-ui.info-refresh', () => landoInfoProvider.refresh()),
       registerCommand('lando-ui.info-refreshNode', offset => landoInfoProvider.refresh(offset)),
       registerCommand('lando-ui.info-openURL', offset => openTreeItem(offset, landoInfoProvider)),
       registerCommand('lando-ui.info-copy', offset => copyTreeItem(offset, landoInfoProvider)),
+      registerCommand('lando-ui.sshService', offset => lando.sshService(offset, landoInfoProvider)),
 
       // list panel commands
       registerCommand('lando-ui.list-refresh', () => landoListProvider.refresh()),

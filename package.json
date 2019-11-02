@@ -39,13 +39,18 @@
           "type": "string",
           "scope": "machine-overridable",
           "description": "Default workspace folder to be used if there are more than one folder in a workspace"
+        },
+        "lando-ui.database.exportPath": {
+          "type": "string",
+          "scope": "machine-overridable",
+          "description": "Default export location for exporting databases"
         }
       }
     },
     "commands": [
       {
         "command": "lando-ui.pickWorkspaceFolder",
-        "title": "Change Folder"
+        "title": "Change Workspace Folder"
       },
       {
         "command": "lando-ui.init",
@@ -74,6 +79,14 @@
       {
         "command": "lando-ui.poweroff",
         "title": "Lando Poweroff"
+      },
+      {
+        "command": "lando-ui.db-export",
+        "title": "Export Database"
+      },
+      {
+        "command": "lando-ui.db-import",
+        "title": "Import Database"
       },
       {
         "command": "lando-ui.info-refresh",
@@ -133,10 +146,18 @@
       },
       {
         "command": "lando-ui.list-copy",
-        "title": "Copy to clipboard",
+        "title": "Copy to Clipboard",
         "icon": {
           "light": "resources/light/clippy.svg",
           "dark": "resources/dark/clippy.svg"
+        }
+      },
+      {
+        "command": "lando-ui.sshService",
+        "title": "SSH into Service",
+        "icon": {
+          "light": "resources/light/terminal.svg",
+          "dark": "resources/dark/terminal.svg"
         }
       }
     ],
@@ -165,27 +186,43 @@
       "view/title": [
         {
           "command": "lando-ui.pickWorkspaceFolder",
-          "when": "view == lando-info"
+          "when": "view == lando-info",
+          "group": "lando-info-g1"
         },
         {
           "command": "lando-ui.init",
-          "when": "view == lando-info"
+          "when": "view == lando-info",
+          "group": "lando-info-g2"
         },
         {
           "command": "lando-ui.start",
-          "when": "view == lando-info"
+          "when": "view == lando-info",
+          "group": "lando-info-g3"
         },
         {
           "command": "lando-ui.stop",
-          "when": "view == lando-info"
+          "when": "view == lando-info",
+          "group": "lando-info-g3"
         },
         {
           "command": "lando-ui.restart",
-          "when": "view == lando-info"
+          "when": "view == lando-info",
+          "group": "lando-info-g3"
         },
         {
           "command": "lando-ui.poweroff",
-          "when": "view == lando-info || view == lando-list"
+          "when": "view == lando-info || view == lando-list",
+          "group": "lando-info-g1"
+        },
+        {
+          "command": "lando-ui.db-export",
+          "when": "view == lando-info",
+          "group": "lando-info-g4"
+        },
+        {
+          "command": "lando-ui.db-import",
+          "when": "view == lando-info",
+          "group": "lando-info-g4"
         },
         {
           "command": "lando-ui.info-refresh",
@@ -200,6 +237,11 @@
       ],
       "view/item/context": [
         {
+          "command": "lando-ui.sshService",
+          "when": "view == lando-info && viewItem == service",
+          "group": "inline"
+        },
+        {
           "command": "lando-ui.info-openURL",
           "when": "view == lando-info && viewItem == link",
           "group": "inline"
@@ -207,6 +249,26 @@
         {
           "command": "lando-ui.stopService",
           "when": "view == lando-list && viewItem == app",
+          "group": "inline"
+        },
+        {
+          "command": "lando-ui.info-copy",
+          "when": "view == lando-info && viewItem == string",
+          "group": "inline"
+        },
+        {
+          "command": "lando-ui.info-copy",
+          "when": "view == lando-info && viewItem == link",
+          "group": "inline"
+        },
+        {
+          "command": "lando-ui.list-copy",
+          "when": "view == lando-list && viewItem == string",
+          "group": "inline"
+        },
+        {
+          "command": "lando-ui.list-copy",
+          "when": "view == lando-list && viewItem == link",
           "group": "inline"
         }
       ]
@@ -237,7 +299,6 @@
     "@types/copy-paste": "^1.1.30",
     "@types/yaml": "^1.2.0",
     "child_process": "^1.0.2",
-    "copy-paste": "^1.3.0",
     "jsonc-parser": "^0.4.2",
     "open": "^7.0.0",
     "strip-ansi": "^5.2.0",

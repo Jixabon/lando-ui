@@ -68,12 +68,17 @@ export class LandoListProvider implements TreeDataProvider<number> {
             : TreeItemCollapsibleState.Collapsed
           : TreeItemCollapsibleState.None
       );
-      treeItem.contextValue = label.match(/^service_/)
-        ? label.includes('_global_')
-          ? 'service'
-          : 'app'
-        : valueNode.type;
-      treeItem.label = treeItem.label ? treeItem.label.replace(/^service_/, '') : treeItem.label;
+
+      if (label.match(/^service_/)) {
+        if (label.includes('_global_')) {
+          treeItem.contextValue = 'service';
+        } else {
+          treeItem.contextValue = 'app';
+        }
+        treeItem.label = treeItem.label ? treeItem.label.replace(/^service_/, '') : treeItem.label;
+      } else {
+        treeItem.contextValue = valueNode.type;
+      }
 
       // special cases
       if (treeItem.contextValue === 'app' || treeItem.contextValue === 'service') {
