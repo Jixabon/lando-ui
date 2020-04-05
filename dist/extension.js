@@ -8156,7 +8156,9 @@ function activate(context) {
     commands_1.setButtonTo('start');
     // ----------------- Check version of lando (or if it's installed) -----------------
     if (commands_1.checkVersion()) {
-        exports.toggleButton.show();
+        if (vscode_1.workspace.workspaceFolders != undefined) {
+            exports.toggleButton.show();
+        }
     }
     else {
         vscode_1.window.showErrorMessage('Lando is not installed or you are not running the required version.');
@@ -8166,9 +8168,7 @@ function activate(context) {
     context.subscriptions.push(exports.outputChannel);
     // ----------------- Get workspace Folder -----------------
     determineWorkspaceFolder();
-    if (vscode_1.workspace.workspaceFolders == undefined) {
-        exports.toggleButton.hide();
-    }
+    console.log('before tree providers');
     // ----------------- Tree Providers -----------------
     let landoInfoProvider = new landoInfoProvider_1.LandoInfoProvider(context);
     let landoListProvider = new landoListProvider_1.LandoListProvider(context);
@@ -8203,16 +8203,23 @@ function activate(context) {
         registerCommand('lando-ui.list-copy', (offset) => commands_1.copyTreeItem(offset, landoListProvider)),
         registerCommand('lando-ui.stopService', (offset) => lando.stopService(offset, landoListProvider)),
     ]);
+    console.log('after tree providers');
     // ----------------- Fetch lando file and grab app name from it -----------------
     if (workspaceFolderPath) {
-        checkLandoFileExists(workspaceFolderPath + '/.lando.yml');
+        if (checkLandoFileExists(workspaceFolderPath + '/.lando.yml')) {
+            updateCurrentAppConfig(workspaceFolderPath + '/.lando.yml');
+            vscode_1.commands.executeCommand('lando-ui.info-refresh');
+        }
+        else {
+            vscode_1.commands.executeCommand('lando-ui.info-refresh');
+        }
     }
     startWatcher();
     context.subscriptions.push(exports.watcher);
-    // ----------------- Checking if current app is in the list of running containers -----------------
-    if (commands_1.checkAppRunning(currentAppName)) {
-        commands_1.setButtonTo('stop');
-    }
+    // ----------------- Update the button to reflect workspace folder lando app status -----------------
+    console.log('before button refresh');
+    refreshToggleButton();
+    console.log('after button refresh');
     // ----------------- Watch for changes in configuration -----------------
     vscode_1.workspace.onDidChangeConfiguration(() => {
         determineWorkspaceFolder();
@@ -8225,17 +8232,9 @@ function activate(context) {
 exports.activate = activate;
 function checkLandoFileExists(landoFilePath) {
     if (fs.existsSync(landoFilePath)) {
-        updateCurrentAppConfig(landoFilePath);
-        vscode_1.commands.executeCommand('lando-ui.info-refresh');
-        commands_1.setButtonTo('start');
-        if (commands_1.checkAppRunning(currentAppName)) {
-            commands_1.setButtonTo('stop');
-        }
         return true;
     }
     else {
-        vscode_1.commands.executeCommand('lando-ui.info-refresh');
-        commands_1.setButtonTo('init');
         return false;
     }
 }
@@ -8275,7 +8274,14 @@ exports.pickWorkspaceFolder = pickWorkspaceFolder;
 function restartWorkspaceFolderDependents(newWorkspaceFolder) {
     workspaceFolderPath = newWorkspaceFolder;
     startWatcher();
-    checkLandoFileExists(workspaceFolderPath + '/.lando.yml');
+    if (checkLandoFileExists(workspaceFolderPath + '/.lando.yml')) {
+        updateCurrentAppConfig(workspaceFolderPath + '/.lando.yml');
+        vscode_1.commands.executeCommand('lando-ui.info-refresh');
+    }
+    else {
+        vscode_1.commands.executeCommand('lando-ui.info-refresh');
+    }
+    refreshToggleButton();
 }
 exports.restartWorkspaceFolderDependents = restartWorkspaceFolderDependents;
 function startWatcher() {
@@ -8354,6 +8360,7 @@ function determineWorkspaceFolder() {
         }
     }
     else if (Object.keys(vscode_1.workspace.workspaceFolders ? vscode_1.workspace.workspaceFolders : []).length > 1) {
+        console.log('should pick');
         commands_1.setButtonTo('pick');
         vscode_1.window.showWarningMessage('There are multiple Workspace folders detected. Please select one to be the default.', ...['Select Default Folder']).then((selection) => {
             if (selection == 'Select Default Folder') {
@@ -8370,6 +8377,23 @@ function determineWorkspaceFolder() {
     }
 }
 exports.determineWorkspaceFolder = determineWorkspaceFolder;
+function refreshToggleButton() {
+    console.log('refreshing button');
+    if (workspaceFolderPath != '' && checkLandoFileExists(workspaceFolderPath + '/.lando.yml')) {
+        if (commands_1.checkAppRunning(currentAppName)) {
+            commands_1.setButtonTo('stop');
+        }
+        else {
+            commands_1.setButtonTo('start');
+        }
+    }
+    else {
+        if (!firstStart) {
+            commands_1.setButtonTo('init');
+        }
+    }
+}
+exports.refreshToggleButton = refreshToggleButton;
 
 
 /***/ }),
@@ -8441,7 +8465,7 @@ function stop(dir, isCurrentApp = true) {
             if (isCurrentApp)
                 commands_1.setButtonTo('stopping');
         }
-        if (data.includes('App stopped')) {
+        if (data.includes('stopped')) {
             vscode_1.window.showInformationMessage('The Lando app ' + extension_1.getCurrentAppName() + ' stopped successfully');
             if (isCurrentApp)
                 commands_1.setButtonTo('start');
@@ -8728,6 +8752,7 @@ class LandoInfoProvider {
         this.parseTree();
     }
     refresh(offset) {
+        console.log('refresh info');
         this.parseTree();
         if (offset) {
             this._onDidChangeTreeData.fire(offset);
@@ -8735,12 +8760,7 @@ class LandoInfoProvider {
         else {
             this._onDidChangeTreeData.fire();
         }
-        if (commands_1.checkAppRunning(extension_1.getCurrentAppName())) {
-            commands_1.setButtonTo('stop');
-        }
-        else {
-            commands_1.setButtonTo('start');
-        }
+        extension_1.refreshToggleButton();
     }
     parseTree() {
         this.text = lando_1.reformatInfo(lando_1.info(extension_1.getWorkspaceFolderPath()));
@@ -8844,7 +8864,6 @@ const vscode_1 = __webpack_require__(/*! vscode */ "vscode");
 const extension_1 = __webpack_require__(/*! ./extension */ "./src/extension.ts");
 const lando_1 = __webpack_require__(/*! ./lando */ "./src/lando.ts");
 const json = __webpack_require__(/*! jsonc-parser */ "jsonc-parser");
-const commands_1 = __webpack_require__(/*! ./commands */ "./src/commands.ts");
 class LandoListProvider {
     constructor(context) {
         this._onDidChangeTreeData = new vscode_1.EventEmitter();
@@ -8854,6 +8873,7 @@ class LandoListProvider {
         this.parseTree();
     }
     refresh(offset) {
+        console.log('refreshing list');
         this.parseTree();
         if (offset) {
             this._onDidChangeTreeData.fire(offset);
@@ -8861,12 +8881,7 @@ class LandoListProvider {
         else {
             this._onDidChangeTreeData.fire();
         }
-        if (commands_1.checkAppRunning(extension_1.getCurrentAppName())) {
-            commands_1.setButtonTo('stop');
-        }
-        else {
-            commands_1.setButtonTo('start');
-        }
+        extension_1.refreshToggleButton();
     }
     parseTree() {
         this.text = lando_1.reformatList(lando_1.list());

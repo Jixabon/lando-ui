@@ -1,8 +1,7 @@
 import { TreeDataProvider, ExtensionContext, TreeItem, TreeItemCollapsibleState, EventEmitter, Event } from 'vscode';
-import { getCurrentAppName } from './extension';
+import { refreshToggleButton } from './extension';
 import { list, reformatList } from './lando';
 import * as json from 'jsonc-parser';
-import { checkAppRunning, setButtonTo } from './commands';
 
 export class LandoListProvider implements TreeDataProvider<number> {
   private _onDidChangeTreeData: EventEmitter<number | null> = new EventEmitter<number | null>();
@@ -16,17 +15,15 @@ export class LandoListProvider implements TreeDataProvider<number> {
   }
 
   refresh(offset?: number): void {
+    console.log('refreshing list');
     this.parseTree();
     if (offset) {
       this._onDidChangeTreeData.fire(offset);
     } else {
       this._onDidChangeTreeData.fire();
     }
-    if (checkAppRunning(getCurrentAppName())) {
-      setButtonTo('stop');
-    } else {
-      setButtonTo('start');
-    }
+
+    refreshToggleButton();
   }
 
   private parseTree(): void {

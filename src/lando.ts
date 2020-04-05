@@ -54,7 +54,7 @@ export function stop(dir: string, isCurrentApp: boolean = true): void {
       window.showInformationMessage('Stopping the Lando app ' + getCurrentAppName());
       if (isCurrentApp) setButtonTo('stopping');
     }
-    if (data.includes('App stopped')) {
+    if (data.includes('stopped')) {
       window.showInformationMessage('The Lando app ' + getCurrentAppName() + ' stopped successfully');
       if (isCurrentApp) setButtonTo('start');
       commands.executeCommand('lando-ui.info-refresh');

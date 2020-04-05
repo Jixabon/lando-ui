@@ -8,6 +8,13 @@ All notable changes to the "lando-ui" extension will be documented in this file.
 - Add Lando Rebuild command.
 - (v3.0.0-rrc.3) Utilize db-import and db-export ability to use absolute paths.
 
+## [0.6.1] - 2020-04-04
+
+### Fixed
+
+- Bug where button refresh was overriding earlier button states.
+- Bug that make button stuck on "stopping"
+
 ## [0.6.0] - 2020-04-04
 
 ### Fixed

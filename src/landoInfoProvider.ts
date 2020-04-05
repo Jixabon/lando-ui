@@ -1,8 +1,8 @@
 import { TreeDataProvider, ExtensionContext, TreeItem, TreeItemCollapsibleState, EventEmitter, Event } from 'vscode';
-import { getWorkspaceFolderPath, getCurrentAppName } from './extension';
+import { getWorkspaceFolderPath, refreshToggleButton } from './extension';
 import { info, reformatInfo } from './lando';
 import * as json from 'jsonc-parser';
-import { addWorkspaceFolderName, checkAppRunning, setButtonTo } from './commands';
+import { addWorkspaceFolderName } from './commands';
 
 export class LandoInfoProvider implements TreeDataProvider<number> {
   private _onDidChangeTreeData: EventEmitter<number | null> = new EventEmitter<number | null>();
@@ -16,17 +16,15 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
   }
 
   refresh(offset?: number): void {
+    console.log('refresh info');
     this.parseTree();
     if (offset) {
       this._onDidChangeTreeData.fire(offset);
     } else {
       this._onDidChangeTreeData.fire();
     }
-    if (checkAppRunning(getCurrentAppName())) {
-      setButtonTo('stop');
-    } else {
-      setButtonTo('start');
-    }
+
+    refreshToggleButton();
   }
 
   private parseTree(): void {

@@ -22,7 +22,9 @@ export function activate(context: ExtensionContext) {
 
   // ----------------- Check version of lando (or if it's installed) -----------------
   if (checkVersion()) {
-    toggleButton.show();
+    if (workspace.workspaceFolders != undefined) {
+      toggleButton.show();
+    }
   } else {
     window.showErrorMessage('Lando is not installed or you are not running the required version.');
   }
@@ -33,10 +35,8 @@ export function activate(context: ExtensionContext) {
 
   // ----------------- Get workspace Folder -----------------
   determineWorkspaceFolder();
-  if (workspace.workspaceFolders == undefined) {
-    toggleButton.hide();
-  }
 
+  console.log('before tree providers');
   // ----------------- Tree Providers -----------------
   let landoInfoProvider: LandoInfoProvider = new LandoInfoProvider(context);
   let landoListProvider: LandoListProvider = new LandoListProvider(context);
@@ -77,19 +77,25 @@ export function activate(context: ExtensionContext) {
       registerCommand('lando-ui.stopService', (offset) => lando.stopService(offset, landoListProvider)),
     ]
   );
+  console.log('after tree providers');
 
   // ----------------- Fetch lando file and grab app name from it -----------------
   if (workspaceFolderPath) {
-    checkLandoFileExists(workspaceFolderPath + '/.lando.yml');
+    if (checkLandoFileExists(workspaceFolderPath + '/.lando.yml')) {
+      updateCurrentAppConfig(workspaceFolderPath + '/.lando.yml');
+      commands.executeCommand('lando-ui.info-refresh');
+    } else {
+      commands.executeCommand('lando-ui.info-refresh');
+    }
   }
 
   startWatcher();
   context.subscriptions.push(watcher);
 
-  // ----------------- Checking if current app is in the list of running containers -----------------
-  if (checkAppRunning(currentAppName)) {
-    setButtonTo('stop');
-  }
+  // ----------------- Update the button to reflect workspace folder lando app status -----------------
+  console.log('before button refresh');
+  refreshToggleButton();
+  console.log('after button refresh');
 
   // ----------------- Watch for changes in configuration -----------------
   workspace.onDidChangeConfiguration(() => {
@@ -104,16 +110,8 @@ export function activate(context: ExtensionContext) {
 
 export function checkLandoFileExists(landoFilePath: string): boolean {
   if (fs.existsSync(landoFilePath)) {
-    updateCurrentAppConfig(landoFilePath);
-    commands.executeCommand('lando-ui.info-refresh');
-    setButtonTo('start');
-    if (checkAppRunning(currentAppName)) {
-      setButtonTo('stop');
-    }
     return true;
   } else {
-    commands.executeCommand('lando-ui.info-refresh');
-    setButtonTo('init');
     return false;
   }
 }
@@ -153,7 +151,13 @@ export function pickWorkspaceFolder() {
 export function restartWorkspaceFolderDependents(newWorkspaceFolder: string) {
   workspaceFolderPath = newWorkspaceFolder;
   startWatcher();
-  checkLandoFileExists(workspaceFolderPath + '/.lando.yml');
+  if (checkLandoFileExists(workspaceFolderPath + '/.lando.yml')) {
+    updateCurrentAppConfig(workspaceFolderPath + '/.lando.yml');
+    commands.executeCommand('lando-ui.info-refresh');
+  } else {
+    commands.executeCommand('lando-ui.info-refresh');
+  }
+  refreshToggleButton();
 }
 
 export function startWatcher() {
@@ -230,6 +234,7 @@ export function determineWorkspaceFolder() {
       commands.executeCommand('lando-ui.info-refresh');
     }
   } else if (Object.keys(workspace.workspaceFolders ? workspace.workspaceFolders : []).length > 1) {
+    console.log('should pick');
     setButtonTo('pick');
     window.showWarningMessage('There are multiple Workspace folders detected. Please select one to be the default.', ...['Select Default Folder']).then((selection) => {
       if (selection == 'Select Default Folder') {
@@ -242,5 +247,20 @@ export function determineWorkspaceFolder() {
       workspace.getConfiguration('lando-ui.workspaceFolder').update('default', '', ConfigurationTarget.Workspace);
     }
     commands.executeCommand('lando-ui.info-refresh');
+  }
+}
+
+export function refreshToggleButton() {
+  console.log('refreshing button');
+  if (workspaceFolderPath != '' && checkLandoFileExists(workspaceFolderPath + '/.lando.yml')) {
+    if (checkAppRunning(currentAppName)) {
+      setButtonTo('stop');
+    } else {
+      setButtonTo('start');
+    }
+  } else {
+    if (!firstStart) {
+      setButtonTo('init');
+    }
   }
 }

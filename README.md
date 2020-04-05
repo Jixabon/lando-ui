@@ -49,6 +49,13 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### v0.6.1
+
+#### Fixed
+
+- Bug where button refresh was overriding earlier button states.
+- Bug that make button stuck on "stopping"
+
 ### v0.6.0
 
 ### Fixed
