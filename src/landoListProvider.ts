@@ -1,6 +1,8 @@
 import { TreeDataProvider, ExtensionContext, TreeItem, TreeItemCollapsibleState, EventEmitter, Event } from 'vscode';
+import { getCurrentAppName } from './extension';
 import { list, reformatList } from './lando';
 import * as json from 'jsonc-parser';
+import { checkAppRunning, setButtonTo } from './commands';
 
 export class LandoListProvider implements TreeDataProvider<number> {
   private _onDidChangeTreeData: EventEmitter<number | null> = new EventEmitter<number | null>();
@@ -19,6 +21,11 @@ export class LandoListProvider implements TreeDataProvider<number> {
       this._onDidChangeTreeData.fire(offset);
     } else {
       this._onDidChangeTreeData.fire();
+    }
+    if (checkAppRunning(getCurrentAppName())) {
+      setButtonTo('stop');
+    } else {
+      setButtonTo('start');
     }
   }
 
@@ -62,11 +69,7 @@ export class LandoListProvider implements TreeDataProvider<number> {
       let label: string = this.getLabel(valueNode);
       let treeItem: TreeItem = new TreeItem(
         label,
-        hasChildren
-          ? valueNode.type === 'object'
-            ? TreeItemCollapsibleState.Expanded
-            : TreeItemCollapsibleState.Collapsed
-          : TreeItemCollapsibleState.None
+        hasChildren ? (valueNode.type === 'object' ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed) : TreeItemCollapsibleState.None
       );
 
       if (label.match(/^service_/)) {

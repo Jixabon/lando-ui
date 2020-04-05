@@ -6,6 +6,20 @@ All notable changes to the "lando-ui" extension will be documented in this file.
 
 - Add Lando Destroy command.
 - Add Lando Rebuild command.
+- (v3.0.0-rrc.3) Utilize db-import and db-export ability to use absolute paths.
+
+## [0.6.0] - 2020-04-04
+
+### Fixed
+
+- New pre-release series not being parsed correctly.
+- Parsing new list json format (list is no longer nested under an app name).
+- Hiding commands that can't be run outside of the side panels.
+
+### Changed
+
+- Button will now check app running status on Info or List panel refreshes.
+- Start, Stop, Restarting, etc messages to include the app name in message.
 
 ## [0.5.0] - 2019-11-02
 

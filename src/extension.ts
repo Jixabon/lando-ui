@@ -1,24 +1,8 @@
-import {
-  window,
-  commands,
-  workspace,
-  ExtensionContext,
-  StatusBarAlignment,
-  ConfigurationTarget,
-  FileSystemWatcher
-} from 'vscode';
+import { window, commands, workspace, ExtensionContext, StatusBarAlignment, ConfigurationTarget, FileSystemWatcher } from 'vscode';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
 import * as lando from './lando';
-import {
-  openTreeItem,
-  copyTreeItem,
-  checkAppRunning,
-  checkVersion,
-  setButtonTo,
-  dbUserExport,
-  dbUserImport
-} from './commands';
+import { openTreeItem, copyTreeItem, checkAppRunning, checkVersion, setButtonTo, dbUserExport, dbUserImport } from './commands';
 import { LandoInfoProvider } from './landoInfoProvider';
 import { LandoListProvider } from './landoListProvider';
 
@@ -49,15 +33,18 @@ export function activate(context: ExtensionContext) {
 
   // ----------------- Get workspace Folder -----------------
   determineWorkspaceFolder();
+  if (workspace.workspaceFolders == undefined) {
+    toggleButton.hide();
+  }
 
   // ----------------- Tree Providers -----------------
   let landoInfoProvider: LandoInfoProvider = new LandoInfoProvider(context);
   let landoListProvider: LandoListProvider = new LandoListProvider(context);
   let landoInfoView = window.createTreeView('lando-info', {
-    treeDataProvider: landoInfoProvider
+    treeDataProvider: landoInfoProvider,
   });
   let landoListView = window.createTreeView('lando-list', {
-    treeDataProvider: landoListProvider
+    treeDataProvider: landoListProvider,
   });
 
   // ----------------- Registering commands -----------------
@@ -78,16 +65,16 @@ export function activate(context: ExtensionContext) {
 
       // info panel commands
       registerCommand('lando-ui.info-refresh', () => landoInfoProvider.refresh()),
-      registerCommand('lando-ui.info-refreshNode', offset => landoInfoProvider.refresh(offset)),
-      registerCommand('lando-ui.info-openURL', offset => openTreeItem(offset, landoInfoProvider)),
-      registerCommand('lando-ui.info-copy', offset => copyTreeItem(offset, landoInfoProvider)),
-      registerCommand('lando-ui.sshService', offset => lando.sshService(offset, landoInfoProvider)),
+      registerCommand('lando-ui.info-refreshNode', (offset) => landoInfoProvider.refresh(offset)),
+      registerCommand('lando-ui.info-openURL', (offset) => openTreeItem(offset, landoInfoProvider)),
+      registerCommand('lando-ui.info-copy', (offset) => copyTreeItem(offset, landoInfoProvider)),
+      registerCommand('lando-ui.sshService', (offset) => lando.sshService(offset, landoInfoProvider)),
 
       // list panel commands
       registerCommand('lando-ui.list-refresh', () => landoListProvider.refresh()),
-      registerCommand('lando-ui.list-refreshNode', offset => landoListProvider.refresh(offset)),
-      registerCommand('lando-ui.list-copy', offset => copyTreeItem(offset, landoListProvider)),
-      registerCommand('lando-ui.stopService', offset => lando.stopService(offset, landoListProvider))
+      registerCommand('lando-ui.list-refreshNode', (offset) => landoListProvider.refresh(offset)),
+      registerCommand('lando-ui.list-copy', (offset) => copyTreeItem(offset, landoListProvider)),
+      registerCommand('lando-ui.stopService', (offset) => lando.stopService(offset, landoListProvider)),
     ]
   );
 
@@ -134,7 +121,7 @@ export function checkLandoFileExists(landoFilePath: string): boolean {
 export function isWorkspaceFolder(folderPath: string) {
   var workspaceFolders = workspace.workspaceFolders ? workspace.workspaceFolders : [];
   var isWorkspaceFolder = false;
-  workspaceFolders.forEach(folder => {
+  workspaceFolders.forEach((folder) => {
     if (folderPath === folder.uri.fsPath) {
       isWorkspaceFolder = true;
     }
@@ -156,11 +143,9 @@ export function updateCurrentAppConfig(landoFilePath: string) {
 }
 
 export function pickWorkspaceFolder() {
-  window.showWorkspaceFolderPick().then(workspaceFolder => {
+  window.showWorkspaceFolderPick().then((workspaceFolder) => {
     if (workspaceFolder) {
-      workspace
-        .getConfiguration('lando-ui.workspaceFolder')
-        .update('default', workspaceFolder.uri.fsPath, ConfigurationTarget.Workspace);
+      workspace.getConfiguration('lando-ui.workspaceFolder').update('default', workspaceFolder.uri.fsPath, ConfigurationTarget.Workspace);
     }
   });
 }
@@ -176,7 +161,7 @@ export function startWatcher() {
     watcher.dispose();
   }
   watcher = workspace.createFileSystemWatcher(workspaceFolderPath + '/*.yml');
-  watcher.onDidCreate(uri => {
+  watcher.onDidCreate((uri) => {
     if (uri.fsPath.includes('.lando.yml')) {
       updateCurrentAppConfig(workspaceFolderPath + '/.lando.yml');
       commands.executeCommand('lando-ui.info-refresh');
@@ -186,7 +171,7 @@ export function startWatcher() {
       }
     }
   });
-  watcher.onDidChange(uri => {
+  watcher.onDidChange((uri) => {
     if (uri.fsPath.includes('.lando.yml')) {
       updateCurrentAppConfig(workspaceFolderPath + '/.lando.yml');
       commands.executeCommand('lando-ui.info-refresh');
@@ -196,7 +181,7 @@ export function startWatcher() {
       }
     }
   });
-  watcher.onDidDelete(uri => {
+  watcher.onDidDelete((uri) => {
     if (!fs.existsSync(workspaceFolderPath + '/.lando.yml')) {
       setButtonTo('init');
       commands.executeCommand('lando-ui.info-refresh');
@@ -222,9 +207,7 @@ export function getWorkspaceFolderNameFromPath() {
 }
 
 export function determineWorkspaceFolder() {
-  var defaultWorkspaceFolderPath: string | undefined = workspace
-    .getConfiguration('lando-ui.workspaceFolder')
-    .get('default');
+  var defaultWorkspaceFolderPath: string | undefined = workspace.getConfiguration('lando-ui.workspaceFolder').get('default');
 
   if (defaultWorkspaceFolderPath != undefined && defaultWorkspaceFolderPath != '') {
     if (isWorkspaceFolder(defaultWorkspaceFolderPath)) {
@@ -234,16 +217,11 @@ export function determineWorkspaceFolder() {
       }
     } else if (Object.keys(workspace.workspaceFolders ? workspace.workspaceFolders : []).length > 1) {
       setButtonTo('pick');
-      window
-        .showWarningMessage(
-          'Your current default Workspace folder does not exists in this Workspace. Please select one to be the default.',
-          ...['Select Default Folder']
-        )
-        .then(selection => {
-          if (selection == 'Select Default Folder') {
-            pickWorkspaceFolder();
-          }
-        });
+      window.showWarningMessage('Your current default Workspace folder does not exists in this Workspace. Please select one to be the default.', ...['Select Default Folder']).then((selection) => {
+        if (selection == 'Select Default Folder') {
+          pickWorkspaceFolder();
+        }
+      });
     } else {
       workspaceFolderPath = workspace.workspaceFolders ? workspace.workspaceFolders[0].uri.fsPath : '';
       if (defaultWorkspaceFolderPath != '') {
@@ -253,16 +231,11 @@ export function determineWorkspaceFolder() {
     }
   } else if (Object.keys(workspace.workspaceFolders ? workspace.workspaceFolders : []).length > 1) {
     setButtonTo('pick');
-    window
-      .showWarningMessage(
-        'There are multiple Workspace folders detected. Please select one to be the default.',
-        ...['Select Default Folder']
-      )
-      .then(selection => {
-        if (selection == 'Select Default Folder') {
-          pickWorkspaceFolder();
-        }
-      });
+    window.showWarningMessage('There are multiple Workspace folders detected. Please select one to be the default.', ...['Select Default Folder']).then((selection) => {
+      if (selection == 'Select Default Folder') {
+        pickWorkspaceFolder();
+      }
+    });
   } else {
     workspaceFolderPath = workspace.workspaceFolders ? workspace.workspaceFolders[0].uri.fsPath : '';
     if (defaultWorkspaceFolderPath != '') {

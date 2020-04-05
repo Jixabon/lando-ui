@@ -1,12 +1,5 @@
 import { window, commands, workspace, Uri } from 'vscode';
-import {
-  outputChannel,
-  getAppNameFromAppConfig,
-  getLandoFile,
-  getCurrentAppName,
-  getWorkspaceFolderPath,
-  getWorkspaceFolderNameFromPath
-} from './extension';
+import { outputChannel, getAppNameFromAppConfig, getLandoFile, getCurrentAppName, getWorkspaceFolderPath, getWorkspaceFolderNameFromPath } from './extension';
 import { exec, execSync } from 'child_process';
 import * as json from 'jsonc-parser';
 import * as stripAnsi from 'strip-ansi';
@@ -22,24 +15,24 @@ export function init(): void {
 export function start(dir: string): void {
   showOutput();
   const child = exec('lando start', { cwd: dir });
-  child.stdout.on('data', data => {
+  child.stdout.on('data', (data) => {
     if (data.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
       window.showWarningMessage('Please initiate a lando project: ' + data);
       setButtonTo('init');
     }
     if (data.includes('Starting app')) {
-      window.showInformationMessage('Starting your Lando app');
+      window.showInformationMessage('Starting the Lando app ' + getCurrentAppName());
       setButtonTo('starting');
     }
     if (data.includes('Your app has started up correctly')) {
-      window.showInformationMessage('Your Lando app started successfully');
+      window.showInformationMessage('The Lando app ' + getCurrentAppName() + ' started successfully');
       setButtonTo('stop');
       commands.executeCommand('lando-ui.info-refresh');
       commands.executeCommand('lando-ui.list-refresh');
     }
     outputChannel.append(`${stripAnsi.default(data)}`);
   });
-  child.stderr.on('data', data => {
+  child.stderr.on('data', (data) => {
     outputChannel.append(`${stripAnsi.default(data)}`);
   });
   child.on('exit', (code, signal) => {
@@ -52,24 +45,24 @@ export function start(dir: string): void {
 export function stop(dir: string, isCurrentApp: boolean = true): void {
   showOutput();
   const child = exec('lando stop', { cwd: dir });
-  child.stdout.on('data', data => {
+  child.stdout.on('data', (data) => {
     if (data.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
       window.showWarningMessage('Please initiate a lando project: ' + data);
       if (isCurrentApp) setButtonTo('init');
     }
     if (data.includes('Stopping app')) {
-      window.showInformationMessage('Stopping your Lando app');
+      window.showInformationMessage('Stopping the Lando app ' + getCurrentAppName());
       if (isCurrentApp) setButtonTo('stopping');
     }
     if (data.includes('App stopped')) {
-      window.showInformationMessage('Your Lando app stopped successfully');
+      window.showInformationMessage('The Lando app ' + getCurrentAppName() + ' stopped successfully');
       if (isCurrentApp) setButtonTo('start');
       commands.executeCommand('lando-ui.info-refresh');
       commands.executeCommand('lando-ui.list-refresh');
     }
     outputChannel.append(`${stripAnsi.default(data)}`);
   });
-  child.stderr.on('data', data => {
+  child.stderr.on('data', (data) => {
     outputChannel.append(`${stripAnsi.default(data)}`);
   });
   child.on('exit', (code, signal) => {
@@ -98,24 +91,24 @@ export function stopService(offset: number, provider: any): void {
 export function restart(dir: string): void {
   showOutput();
   const child = exec('lando restart', { cwd: dir });
-  child.stdout.on('data', data => {
+  child.stdout.on('data', (data) => {
     if (data.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
       window.showWarningMessage('Please initiate a lando project: ' + data);
       setButtonTo('init');
     }
     if (data.includes('just so we can start it up again')) {
-      window.showInformationMessage('Restarting your Lando app');
+      window.showInformationMessage('Restarting the Lando app ' + getCurrentAppName());
       setButtonTo('restarting');
     }
     if (data.includes('Your app has started up correctly')) {
-      window.showInformationMessage('Your Lando app has restarted successfully');
+      window.showInformationMessage('The Lando app ' + getCurrentAppName() + ' has restarted successfully');
       setButtonTo('stop');
       commands.executeCommand('lando-ui.info-refresh');
       commands.executeCommand('lando-ui.list-refresh');
     }
     outputChannel.append(`${stripAnsi.default(data)}`);
   });
-  child.stderr.on('data', data => {
+  child.stderr.on('data', (data) => {
     outputChannel.append(`${stripAnsi.default(data)}`);
   });
   child.on('exit', (code, signal) => {
@@ -128,7 +121,7 @@ export function restart(dir: string): void {
 export function poweroff(): void {
   showOutput();
   const child = exec('lando poweroff', { encoding: 'utf8' });
-  child.stdout.on('data', data => {
+  child.stdout.on('data', (data) => {
     if (data.includes('Spinning Lando containers down')) {
       window.showInformationMessage('Powering off Lando');
     }
@@ -140,7 +133,7 @@ export function poweroff(): void {
     }
     outputChannel.append(`${stripAnsi.default(data)}`);
   });
-  child.stderr.on('data', data => {
+  child.stderr.on('data', (data) => {
     outputChannel.append(`${stripAnsi.default(data)}`);
   });
   child.on('exit', (code, signal) => {
@@ -154,22 +147,21 @@ export function info(dir: string): string {
   try {
     var stdout = execSync('lando info --format json', {
       cwd: dir,
-      encoding: 'utf8'
+      encoding: 'utf8',
     });
     return stdout;
   } catch (e) {
-    if (
-      e.toString().includes('Could not find app in this dir or a reasonable amount of directories above it') ||
-      e.toString().includes("Cannot set property 'opts' of undefined")
-    ) {
+    if (e.toString().includes('Could not find app in this dir or a reasonable amount of directories above it') || e.toString().includes("Cannot set property 'opts' of undefined")) {
       return '[]';
     }
     return '[]';
   }
 }
 
-export function list(): string {
-  var stdout = execSync('lando list --format json', { encoding: 'utf8' });
+export function list(app?: string): string {
+  var command = 'lando list --format json';
+  if (app != undefined) command = command + ' --filter "app=' + app + '"';
+  var stdout = execSync(command, { encoding: 'utf8' });
   return stdout;
 }
 
@@ -189,7 +181,7 @@ export function dbExport(dir: string, host?: string, filePath?: string) {
   if (filePath) command += ' "' + filePath + '"';
 
   const child = exec(command, { cwd: dir });
-  child.stdout.on('data', data => {
+  child.stdout.on('data', (data) => {
     if (data.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
       window.showWarningMessage('Please initiate a lando project: ' + data);
       setButtonTo('init');
@@ -202,7 +194,7 @@ export function dbExport(dir: string, host?: string, filePath?: string) {
     }
     outputChannel.append(`${stripAnsi.default(data)}`);
   });
-  child.stderr.on('data', data => {
+  child.stderr.on('data', (data) => {
     outputChannel.append(`${stripAnsi.default(data)}`);
   });
   child.on('exit', (code, signal) => {
@@ -226,7 +218,7 @@ export function dbImport(dir: string, host?: string, noWipe?: boolean, filePath?
   if (filePath) command += ' "' + filePath + '"';
 
   const child = exec(command, { cwd: dir });
-  child.stdout.on('data', data => {
+  child.stdout.on('data', (data) => {
     if (data.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
       window.showWarningMessage('Please initiate a lando project: ' + data);
       setButtonTo('init');
@@ -242,7 +234,7 @@ export function dbImport(dir: string, host?: string, noWipe?: boolean, filePath?
     }
     outputChannel.append(`${stripAnsi.default(data)}`);
   });
-  child.stderr.on('data', data => {
+  child.stderr.on('data', (data) => {
     outputChannel.append(`${stripAnsi.default(data)}`);
   });
   child.on('exit', (code, signal) => {
@@ -250,7 +242,7 @@ export function dbImport(dir: string, host?: string, noWipe?: boolean, filePath?
     outputChannel.appendLine('child process exited with ' + `code ${code} and signal ${signal}`);
     outputChannel.appendLine('-----------------------');
     if (isTmp) {
-      unlink(getWorkspaceFolderPath() + '/' + filePath, err => {
+      unlink(getWorkspaceFolderPath() + '/' + filePath, (err) => {
         if (err) {
           window.showErrorMessage('Failed to remove tmp import file');
           outputChannel.appendLine('-----------------------');
@@ -283,18 +275,32 @@ export function reformatInfo(info: string): string {
 
 export function reformatList(list: string): string {
   var listJson = json.parse(list);
-  var prop: any;
-  for (prop in listJson) {
-    if (listJson.hasOwnProperty(prop)) {
-      var services: { [k: string]: any } = {};
-      listJson[prop].forEach((element: any) => {
-        var service = element.service;
-        delete element.service;
-        services[service] = element;
-      });
-      listJson['service_' + prop] = services;
-      delete listJson[prop];
+  var fullVersion: string = version();
+  if (fullVersion.includes('-rc.')) {
+    var prop: any;
+    for (prop in listJson) {
+      if (listJson.hasOwnProperty(prop)) {
+        var services: { [k: string]: any } = {};
+        listJson[prop].forEach((element: any) => {
+          var service = element.service;
+          delete element.service;
+          services[service] = element;
+        });
+        listJson['service_' + prop] = services;
+        delete listJson[prop];
+      }
     }
+    return JSON.stringify(listJson);
+  } else {
+    var newList: { [k: string]: any } = {};
+    listJson.forEach((element: any) => {
+      var prop = 'service_' + element.app;
+      delete element.app;
+      if (!(prop in newList)) newList[prop] = {};
+      var service = element.service;
+      delete element.service;
+      newList[prop][service] = element;
+    });
+    return JSON.stringify(newList);
   }
-  return JSON.stringify(listJson);
 }

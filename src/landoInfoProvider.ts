@@ -1,8 +1,8 @@
 import { TreeDataProvider, ExtensionContext, TreeItem, TreeItemCollapsibleState, EventEmitter, Event } from 'vscode';
-import { getWorkspaceFolderPath } from './extension';
+import { getWorkspaceFolderPath, getCurrentAppName } from './extension';
 import { info, reformatInfo } from './lando';
 import * as json from 'jsonc-parser';
-import { addWorkspaceFolderName } from './commands';
+import { addWorkspaceFolderName, checkAppRunning, setButtonTo } from './commands';
 
 export class LandoInfoProvider implements TreeDataProvider<number> {
   private _onDidChangeTreeData: EventEmitter<number | null> = new EventEmitter<number | null>();
@@ -21,6 +21,11 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
       this._onDidChangeTreeData.fire(offset);
     } else {
       this._onDidChangeTreeData.fire();
+    }
+    if (checkAppRunning(getCurrentAppName())) {
+      setButtonTo('stop');
+    } else {
+      setButtonTo('start');
     }
   }
 
@@ -68,11 +73,7 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
       let label = this.getLabel(valueNode);
       let treeItem: TreeItem = new TreeItem(
         label,
-        hasChildren
-          ? valueNode.type === 'object' || valueNode.type === 'array'
-            ? TreeItemCollapsibleState.Expanded
-            : TreeItemCollapsibleState.Collapsed
-          : TreeItemCollapsibleState.None
+        hasChildren ? (valueNode.type === 'object' || valueNode.type === 'array' ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed) : TreeItemCollapsibleState.None
       );
       if (label.match(/^service_/)) {
         treeItem.contextValue = 'service';

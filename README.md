@@ -49,6 +49,19 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### v0.6.0
+
+### Fixed
+
+- New pre-release series not being parsed correctly.
+- Parsing new list json format (list is no longer nested under an app name).
+- Hiding commands that can't be run outside of the side panels.
+
+### Changed
+
+- Button will now check app running status on Info or List panel refreshes.
+- Start, Stop, Restarting, etc messages to include the app name in message.
+
 ### v0.5.0
 
 #### Added

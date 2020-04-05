@@ -1,5 +1,5 @@
 import { window, workspace, env, Uri, QuickPickItem } from 'vscode';
-import { toggleButton, outputChannel, getWorkspaceFolderNameFromPath, getWorkspaceFolderPath } from './extension';
+import { toggleButton, outputChannel, getWorkspaceFolderNameFromPath, getWorkspaceFolderPath, getCurrentAppConfig } from './extension';
 import { list, version, dbExport, info, dbExportOut, dbImport } from './lando';
 import * as json from 'jsonc-parser';
 import * as open from 'open';
@@ -40,26 +40,25 @@ export function checkVersion(): boolean {
   var fullVersion = version();
   // expecting fullVersion format like 'v3.0.0-rc.22'
   var split = fullVersion.split('-');
-  split[0] = split[0].substr(1);
-  var dotVersion = split[1].split('.');
+
+  var dotVersion = split[0].substr(1).split('.');
   var major = dotVersion[0];
   var minor = dotVersion[1];
   var patch = dotVersion[2];
-  var rcNum = split[1].split('.')[1];
 
-  if (rcNum >= '13') {
+  var releaseNum = split[1].split('.');
+
+  // make checks against version
+  if ((releaseNum[0] == 'rc' && releaseNum[1] >= '13') || (releaseNum[0] == 'rrc' && releaseNum[1] >= '1')) {
     return true;
   }
   return false;
 }
 
 export function checkAppRunning(appName: string) {
-  var listJSON = list();
+  var listJSON = list(appName);
   var runningList = json.parse(listJSON);
-  if (appName in runningList) {
-    return true;
-  }
-  return false;
+  return runningList.length > 0;
 }
 
 export function addWorkspaceFolderName(jsonString: string): string {
@@ -142,7 +141,7 @@ export function dbUserExport() {
   if (databaseServices.length == 1) {
     dbSaveAs(databaseServices[0].label);
   } else {
-    window.showQuickPick(databaseServices, { placeHolder: 'Pick a database service to export from' }).then(selected => {
+    window.showQuickPick(databaseServices, { placeHolder: 'Pick a database service to export from' }).then((selected) => {
       dbSaveAs(selected ? selected.label : '');
     });
   }
@@ -153,9 +152,9 @@ function dbSaveDialog(host: string) {
     .showSaveDialog({
       defaultUri: Uri.file(getWorkspaceFolderPath()),
       filters: { 'SQL Data File': ['sql'] },
-      saveLabel: 'Export'
+      saveLabel: 'Export',
     })
-    .then(uri => {
+    .then((uri) => {
       writeDbFile(uri ? uri.path : '', host);
     });
 }
@@ -166,13 +165,13 @@ function dbSaveAs(host: string) {
       [
         { label: 'Lando default', description: "Use Lando's default export location" },
         { label: 'My default and name', description: 'Use my configured export location and name file' },
-        { label: 'Select and name', description: 'Choose export location and name file' }
+        { label: 'Select and name', description: 'Choose export location and name file' },
       ],
       {
-        placeHolder: 'Choose Save operation'
+        placeHolder: 'Choose Save operation',
       }
     )
-    .then(selected => {
+    .then((selected) => {
       switch (selected ? selected.label : '') {
         case 'Lando default':
           dbExport(getWorkspaceFolderPath(), host);
@@ -183,9 +182,9 @@ function dbSaveAs(host: string) {
             .showInputBox({
               prompt: 'Name your SQL file',
               value: 'Untitled.sql',
-              validateInput: validateSQLFileName
+              validateInput: validateSQLFileName,
             })
-            .then(userFileName => {
+            .then((userFileName) => {
               let exportPath = workspace.getConfiguration('lando-ui.database').get('exportPath');
               if (exportPath != null && exportPath != '') {
                 writeDbFile(exportPath + '/' + userFileName, host);
@@ -193,9 +192,9 @@ function dbSaveAs(host: string) {
                 window
                   .showInputBox({
                     prompt: 'Please set your configured export location',
-                    validateInput: validateTrailingSlash
+                    validateInput: validateTrailingSlash,
                   })
-                  .then(userExportPath => {
+                  .then((userExportPath) => {
                     workspace.getConfiguration('lando-ui.database').update('exportPath', userExportPath);
                     writeDbFile(userExportPath + '/' + userFileName, host);
                   });
@@ -211,7 +210,7 @@ function dbSaveAs(host: string) {
 }
 
 function writeDbFile(savePath: string, host: string) {
-  writeFile(savePath, dbExportOut(getWorkspaceFolderPath(), host), err => {
+  writeFile(savePath, dbExportOut(getWorkspaceFolderPath(), host), (err) => {
     if (err) {
       window.showErrorMessage('Failed to write file');
       outputChannel.appendLine('-----------------------');
@@ -223,7 +222,7 @@ function writeDbFile(savePath: string, host: string) {
     var r = createReadStream(savePath);
     var w = createWriteStream(savePath + '.gz');
     r.pipe(gzip).pipe(w);
-    unlink(savePath, err => {
+    unlink(savePath, (err) => {
       if (err) {
         window.showErrorMessage('Failed to remove unzipped file');
         outputChannel.appendLine('-----------------------');
@@ -258,7 +257,7 @@ export function dbUserImport() {
   if (databaseServices.length == 1) {
     dbNoWipe(databaseServices[0].label);
   } else {
-    window.showQuickPick(databaseServices, { placeHolder: 'Pick a database service to import to' }).then(selected => {
+    window.showQuickPick(databaseServices, { placeHolder: 'Pick a database service to import to' }).then((selected) => {
       dbNoWipe(selected ? selected.label : '');
     });
   }
@@ -270,14 +269,14 @@ function dbNoWipe(host: string) {
       [
         { label: 'Drop all tables and import' },
         {
-          label: 'Import without destroying the target database'
-        }
+          label: 'Import without destroying the target database',
+        },
       ],
       {
-        placeHolder: 'Choose import behavior'
+        placeHolder: 'Choose import behavior',
       }
     )
-    .then(selected => {
+    .then((selected) => {
       switch (selected ? selected.label : '') {
         case 'Drop all tables and import':
           dbOpenDialog(host, false);
@@ -296,9 +295,9 @@ function dbOpenDialog(host: string, noWipe: boolean) {
       defaultUri: Uri.file(getWorkspaceFolderPath()),
       canSelectMany: false,
       filters: {
-        'SQL Data File, GZipped SQL Data File': ['sql', 'gz', 'gzip']
+        'SQL Data File, GZipped SQL Data File': ['sql', 'gz', 'gzip'],
       },
-      openLabel: 'Import'
+      openLabel: 'Import',
     })
     .then((uris: any) => {
       let path = uris[0].path;
@@ -307,7 +306,7 @@ function dbOpenDialog(host: string, noWipe: boolean) {
       } else {
         let pathArray = path.split('/');
         let fileName: string = 'tmp_' + pathArray[pathArray.length - 1];
-        copyFile(path, getWorkspaceFolderPath() + '/' + fileName, err => {
+        copyFile(path, getWorkspaceFolderPath() + '/' + fileName, (err) => {
           if (err) {
             window.showErrorMessage('Failed to remove unzipped file');
             outputChannel.appendLine('-----------------------');

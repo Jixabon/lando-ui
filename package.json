@@ -50,7 +50,7 @@
     "commands": [
       {
         "command": "lando-ui.pickWorkspaceFolder",
-        "title": "Change Workspace Folder"
+        "title": "Change Lando Workspace Folder"
       },
       {
         "command": "lando-ui.init",
@@ -82,11 +82,11 @@
       },
       {
         "command": "lando-ui.db-export",
-        "title": "Export Database"
+        "title": "Export Lando Database"
       },
       {
         "command": "lando-ui.db-import",
-        "title": "Import Database"
+        "title": "Import Lando Database"
       },
       {
         "command": "lando-ui.info-refresh",
@@ -183,6 +183,48 @@
       ]
     },
     "menus": {
+      "commandPalette": [
+        {
+          "command": "lando-ui.stopService",
+          "when": "false"
+        },
+        {
+          "command": "lando-ui.info-refresh",
+          "when": "false"
+        },
+        {
+          "command": "lando-ui.list-refresh",
+          "when": "false"
+        },
+        {
+          "command": "lando-ui.info-refreshNode",
+          "when": "false"
+        },
+        {
+          "command": "lando-ui.list-refreshNode",
+          "when": "false"
+        },
+        {
+          "command": "lando-ui.info-openURL",
+          "when": "false"
+        },
+        {
+          "command": "lando-ui.list-openURL",
+          "when": "false"
+        },
+        {
+          "command": "lando-ui.info-copy",
+          "when": "false"
+        },
+        {
+          "command": "lando-ui.list-copy",
+          "when": "false"
+        },
+        {
+          "command": "lando-ui.sshService",
+          "when": "false"
+        }
+      ],
       "view/title": [
         {
           "command": "lando-ui.pickWorkspaceFolder",
