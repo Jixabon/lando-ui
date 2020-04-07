@@ -15,7 +15,6 @@ export class LandoListProvider implements TreeDataProvider<number> {
   }
 
   refresh(offset?: number): void {
-    console.log('refreshing list');
     this.parseTree();
     if (offset) {
       this._onDidChangeTreeData.fire(offset);
