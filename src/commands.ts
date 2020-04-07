@@ -38,15 +38,15 @@ export function copyTreeItem(offset: number, provider: any) {
 
 export function checkVersion(): boolean {
   var fullVersion = version();
-  // expecting fullVersion format like 'v3.0.0-rc.22'
+  // expecting fullVersion format like 'v3.0.0-rc.22' or 'v3.0.0-rrc.1'
   var split = fullVersion.split('-');
 
-  var dotVersion = split[0].substr(1).split('.');
+  var dotVersion = split[0].substr(1).split('.'); // [3, 0, 0]
   var major = dotVersion[0];
   var minor = dotVersion[1];
   var patch = dotVersion[2];
 
-  var releaseNum = split[1].split('.');
+  var releaseNum = split[1].split('.'); // [rc, 22] or [rrc, 1]
 
   // make checks against version
   if ((releaseNum[0] == 'rc' && releaseNum[1] >= '13') || (releaseNum[0] == 'rrc' && releaseNum[1] >= '1')) {
@@ -96,17 +96,17 @@ export function setButtonTo(mode: string) {
       break;
 
     case 'restarting':
-      toggleButton.text = 'Lando Restarting..';
+      toggleButton.text = 'Lando Restarting...';
       toggleButton.command = '';
       break;
 
     case 'rebuilding':
-      toggleButton.text = 'Lando Rebuilding..';
+      toggleButton.text = 'Lando Rebuilding...';
       toggleButton.command = '';
       break;
 
     case 'destroying':
-      toggleButton.text = 'Lando Destroying..';
+      toggleButton.text = 'Lando Destroying...';
       toggleButton.command = '';
       break;
 
