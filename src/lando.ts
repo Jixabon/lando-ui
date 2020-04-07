@@ -42,8 +42,9 @@ export function start(dir: string): void {
   });
 }
 
-export function stop(dir: string, isCurrentApp: boolean = true): void {
+export function stop(dir: string, appName?: string): void {
   showOutput();
+  var isCurrentApp: boolean = appName == getCurrentAppName();
   const child = exec('lando stop', { cwd: dir });
   child.stdout.on('data', (data) => {
     if (data.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
@@ -51,11 +52,11 @@ export function stop(dir: string, isCurrentApp: boolean = true): void {
       if (isCurrentApp) setButtonTo('init');
     }
     if (data.includes('Stopping app')) {
-      window.showInformationMessage('Stopping the Lando app ' + getCurrentAppName());
+      window.showInformationMessage('Stopping the Lando app ' + (appName || getCurrentAppName()));
       if (isCurrentApp) setButtonTo('stopping');
     }
     if (data.includes('stopped')) {
-      window.showInformationMessage('The Lando app ' + getCurrentAppName() + ' stopped successfully');
+      window.showInformationMessage('The Lando app ' + (appName || getCurrentAppName()) + ' stopped successfully');
       if (isCurrentApp) setButtonTo('start');
       commands.executeCommand('lando-ui.info-refresh');
       commands.executeCommand('lando-ui.list-refresh');
@@ -85,7 +86,7 @@ export function stopService(offset: number, provider: any): void {
   var appName = getAppNameFromAppConfig(getLandoFile(landoFile));
 
   var dir = landoFile.replace('/.lando.yml', '');
-  stop(dir, appName == getCurrentAppName());
+  stop(dir, appName);
 }
 
 export function restart(dir: string): void {
@@ -115,6 +116,74 @@ export function restart(dir: string): void {
     outputChannel.appendLine('-----------------------');
     outputChannel.appendLine('child process exited with ' + `code ${code} and signal ${signal}`);
     outputChannel.appendLine('-----------------------');
+  });
+}
+
+export function rebuild(dir: string): void {
+  window.showQuickPick(['Cancel', 'Confirm'], { placeHolder: 'Are you sure you want to rebuild your app?' }).then((selected) => {
+    if (selected == 'Confirm') {
+      showOutput();
+      const child = exec('lando rebuild -y', { cwd: dir });
+      child.stdout.on('data', (data) => {
+        if (data.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
+          window.showWarningMessage('Please initiate a lando project: ' + data);
+          setButtonTo('init');
+        }
+        if (data.includes('Rebuilding app')) {
+          window.showInformationMessage('Rebuilding the Lando app ' + getCurrentAppName());
+          setButtonTo('rebuilding');
+        }
+        if (data.includes('Your app has started up correctly')) {
+          window.showInformationMessage('The Lando app ' + getCurrentAppName() + ' has rebuilt successfully');
+          setButtonTo('stop');
+          commands.executeCommand('lando-ui.info-refresh');
+          commands.executeCommand('lando-ui.list-refresh');
+        }
+        outputChannel.append(`${stripAnsi.default(data)}`);
+      });
+      child.stderr.on('data', (data) => {
+        outputChannel.append(`${stripAnsi.default(data)}`);
+      });
+      child.on('exit', (code, signal) => {
+        outputChannel.appendLine('-----------------------');
+        outputChannel.appendLine('child process exited with ' + `code ${code} and signal ${signal}`);
+        outputChannel.appendLine('-----------------------');
+      });
+    }
+  });
+}
+
+export function destroy(dir: string): void {
+  window.showQuickPick(['Cancel', 'Confirm'], { placeHolder: 'Are you sure you want to destroy your app?' }).then((selected) => {
+    if (selected == 'Confirm') {
+      showOutput();
+      const child = exec('lando destroy -y', { cwd: dir });
+      child.stdout.on('data', (data) => {
+        if (data.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
+          window.showWarningMessage('Please initiate a lando project: ' + data);
+          setButtonTo('init');
+        }
+        if (data.includes('dustbin of history')) {
+          window.showInformationMessage('Destroying the Lando app ' + getCurrentAppName());
+          setButtonTo('destroying');
+        }
+        if (data.includes('App destroyed')) {
+          window.showInformationMessage('The Lando app ' + getCurrentAppName() + ' has been destroyed');
+          setButtonTo('start');
+          commands.executeCommand('lando-ui.info-refresh');
+          commands.executeCommand('lando-ui.list-refresh');
+        }
+        outputChannel.append(`${stripAnsi.default(data)}`);
+      });
+      child.stderr.on('data', (data) => {
+        outputChannel.append(`${stripAnsi.default(data)}`);
+      });
+      child.on('exit', (code, signal) => {
+        outputChannel.appendLine('-----------------------');
+        outputChannel.appendLine('child process exited with ' + `code ${code} and signal ${signal}`);
+        outputChannel.appendLine('-----------------------');
+      });
+    }
   });
 }
 
