@@ -36,7 +36,6 @@ export function activate(context: ExtensionContext) {
   // ----------------- Get workspace Folder -----------------
   determineWorkspaceFolder();
 
-  console.log('before tree providers');
   // ----------------- Tree Providers -----------------
   let landoInfoProvider: LandoInfoProvider = new LandoInfoProvider(context);
   let landoListProvider: LandoListProvider = new LandoListProvider(context);
@@ -59,6 +58,8 @@ export function activate(context: ExtensionContext) {
       registerCommand('lando-ui.start', () => lando.start(workspaceFolderPath)),
       registerCommand('lando-ui.stop', () => lando.stop(workspaceFolderPath)),
       registerCommand('lando-ui.restart', () => lando.restart(workspaceFolderPath)),
+      registerCommand('lando-ui.rebuild', () => lando.rebuild(workspaceFolderPath)),
+      registerCommand('lando-ui.destroy', () => lando.destroy(workspaceFolderPath)),
       registerCommand('lando-ui.poweroff', () => lando.poweroff()),
       registerCommand('lando-ui.db-export', () => dbUserExport()),
       registerCommand('lando-ui.db-import', () => dbUserImport()),
@@ -77,7 +78,6 @@ export function activate(context: ExtensionContext) {
       registerCommand('lando-ui.stopService', (offset) => lando.stopService(offset, landoListProvider)),
     ]
   );
-  console.log('after tree providers');
 
   // ----------------- Fetch lando file and grab app name from it -----------------
   if (workspaceFolderPath) {
@@ -93,9 +93,7 @@ export function activate(context: ExtensionContext) {
   context.subscriptions.push(watcher);
 
   // ----------------- Update the button to reflect workspace folder lando app status -----------------
-  console.log('before button refresh');
   refreshToggleButton();
-  console.log('after button refresh');
 
   // ----------------- Watch for changes in configuration -----------------
   workspace.onDidChangeConfiguration(() => {
@@ -234,7 +232,6 @@ export function determineWorkspaceFolder() {
       commands.executeCommand('lando-ui.info-refresh');
     }
   } else if (Object.keys(workspace.workspaceFolders ? workspace.workspaceFolders : []).length > 1) {
-    console.log('should pick');
     setButtonTo('pick');
     window.showWarningMessage('There are multiple Workspace folders detected. Please select one to be the default.', ...['Select Default Folder']).then((selection) => {
       if (selection == 'Select Default Folder') {
@@ -251,7 +248,6 @@ export function determineWorkspaceFolder() {
 }
 
 export function refreshToggleButton() {
-  console.log('refreshing button');
   if (workspaceFolderPath != '' && checkLandoFileExists(workspaceFolderPath + '/.lando.yml')) {
     if (checkAppRunning(currentAppName)) {
       setButtonTo('stop');
