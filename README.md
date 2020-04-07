@@ -1,12 +1,13 @@
 # Lando UI
 
 Please leave a rating! Feedback is welcome!
+Take the [survey](https://forms.gle/HH9wPoYor2rheUoS6) to help improve the extension.
 
 ## Features
 
 Lando UI was designed to simplify the use of the Lando development tool when inside VSCode. It adds quick button shortcuts and information panels that allow quick, commandless access to your current Lando project, as well as other running projects/containers.
 
-Visit the Lando's website at https://lando.dev/
+Visit the Lando website at https://lando.dev/
 
 ![Lando UI Overview](media/screenshot.png)
 
@@ -48,6 +49,17 @@ This extension contributes the following settings:
 <!-- ## Known Issues -->
 
 ## Release Notes
+
+### v0.7.0
+
+#### Added
+
+- Lando Destroy command.
+- Lando Rebuild command.
+
+#### Fixed
+
+- Stopping a service from list panel showed current app in the message.
 
 ### v0.6.1
 
@@ -145,8 +157,7 @@ This extension contributes the following settings:
 
 ## To Do
 
-- Add Lando Destroy command.
-- Add Lando Rebuild command.
+- (v3.0.0-rrc.3) Utilize db-import and db-export ability to use absolute paths.
 
 ---
 
