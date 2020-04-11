@@ -356,11 +356,9 @@
     "webpack-cli": "^3.3.9"
   },
   "dependencies": {
-    "@types/copy-paste": "^1.1.30",
     "@types/yaml": "^1.2.0",
     "child_process": "^1.0.2",
     "jsonc-parser": "^0.4.2",
-    "open": "^7.0.0",
     "strip-ansi": "^5.2.0",
     "vscode-nls": "^4.1.1",
     "yaml": "^1.6.0"
