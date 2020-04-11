@@ -1,8 +1,7 @@
 import { window, workspace, env, Uri, QuickPickItem } from 'vscode';
-import { toggleButton, outputChannel, getWorkspaceFolderNameFromPath, getWorkspaceFolderPath, getCurrentAppConfig } from './extension';
+import { toggleButton, outputChannel, getWorkspaceFolderNameFromPath, getWorkspaceFolderPath } from './extension';
 import { list, version, dbExport, info, dbExportOut, dbImport } from './lando';
 import * as json from 'jsonc-parser';
-import * as open from 'open';
 import { writeFile, createReadStream, createWriteStream, unlink, copyFile } from 'fs';
 import { createGzip } from 'zlib';
 
@@ -12,13 +11,9 @@ export function showOutput() {
   }
 }
 
-export async function openURL(url: string) {
-  await open(url);
-}
-
 export function openTreeItem(offset: number, provider: any) {
   var treeItem = provider.getTreeItem(offset);
-  openURL(treeItem.label ? treeItem.label : '');
+  env.openExternal(treeItem.label ? treeItem.label : '');
 }
 
 export function copyToClipboard(text: string) {
