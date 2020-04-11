@@ -6,6 +6,16 @@ All notable changes to the "lando-ui" extension will be documented in this file.
 
 - (v3.0.0-rrc.3) Utilize db-import and db-export ability to use absolute paths.
 
+## [0.8.0] - 2020-04-10
+
+### Changed
+
+- Now utilizing env.openExternal() from the vscode api to open links in info panel
+
+### Removed
+
+- Removed unused dependencies
+
 ## [0.7.0] - 2020-04-06
 
 ### Added

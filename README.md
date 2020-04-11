@@ -50,6 +50,16 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### v0.8.0
+
+#### Changed
+
+- Now utilizing env.openExternal() from the vscode api to open links in info panel
+
+#### Removed
+
+- Removed unused dependencies
+
 ### v0.7.0
 
 #### Added
