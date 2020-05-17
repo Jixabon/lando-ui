@@ -3,11 +3,9 @@ import * as fs from 'fs';
 import * as yaml from 'yaml';
 import * as json from 'jsonc-parser';
 import * as lando from './lando';
-import * as drush from './drush';
 import { openTreeItem, copyTreeItem, dbUserExport, dbUserImport } from './commands';
 import { LandoInfoProvider } from './landoInfoProvider';
 import { LandoListProvider } from './landoListProvider';
-import { DrushListProvider } from './drushListProvider';
 
 export var toggleButton: any;
 export var outputChannel: any;
@@ -58,15 +56,11 @@ export function activate(context: ExtensionContext) {
   // ----------------- Tree Providers -----------------
   let landoInfoProvider: LandoInfoProvider = new LandoInfoProvider(context);
   let landoListProvider: LandoListProvider = new LandoListProvider(context);
-  let drushListProvider: DrushListProvider = new DrushListProvider(context);
   let landoInfoView = window.createTreeView('lando-info', {
     treeDataProvider: landoInfoProvider,
   });
   let landoListView = window.createTreeView('lando-list', {
     treeDataProvider: landoListProvider,
-  });
-  let drushListView = window.createTreeView('drush-list', {
-    treeDataProvider: drushListProvider,
   });
 
   // ----------------- Registering commands -----------------
@@ -87,10 +81,6 @@ export function activate(context: ExtensionContext) {
       registerCommand('lando-ui.db-export', () => dbUserExport()),
       registerCommand('lando-ui.db-import', () => dbUserImport()),
 
-      // drush commands
-      registerCommand('lando-ui.drush-cache-rebuild', () => drush.cacheRebuild(workspaceFolderPath)),
-      registerCommand('lando-ui.drush-updatedb', () => drush.updateDatabase(workspaceFolderPath)),
-
       // lando info panel commands
       registerCommand('lando-ui.info-refresh', () => landoInfoProvider.refresh()),
       registerCommand('lando-ui.info-refreshNode', (offset) => landoInfoProvider.refresh(offset)),
@@ -103,10 +93,6 @@ export function activate(context: ExtensionContext) {
       registerCommand('lando-ui.list-refreshNode', (offset) => landoListProvider.refresh(offset)),
       registerCommand('lando-ui.list-copy', (offset) => copyTreeItem(offset, landoListProvider)),
       registerCommand('lando-ui.stopService', (offset) => lando.stopService(offset, landoListProvider)),
-
-      // lando drush panel commands
-      registerCommand('lando-ui.drush-list-refresh', () => drushListProvider.refresh()),
-      registerCommand('lando-ui.drush-list-refreshNode', (offset) => drushListProvider.refresh(offset)),
     ]
   );
 
