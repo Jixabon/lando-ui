@@ -146,7 +146,7 @@
       },
       {
         "command": "lando-ui.info-copy",
-        "title": "Copy to clipboard",
+        "title": "Copy to Clipboard",
         "icon": {
           "light": "resources/light/clippy.svg",
           "dark": "resources/dark/clippy.svg"
