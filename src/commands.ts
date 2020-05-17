@@ -1,15 +1,9 @@
 import { window, workspace, env, Uri, QuickPickItem } from 'vscode';
-import { toggleButton, outputChannel, getWorkspaceFolderNameFromPath, getWorkspaceFolderPath } from './extension';
-import { list, version, dbExport, info, dbExportOut, dbImport } from './lando';
+import { outputChannel, getWorkspaceFolderPath } from './extension';
+import { dbExport, info, dbExportOut, dbImport } from './lando';
 import * as json from 'jsonc-parser';
 import { writeFile, createReadStream, createWriteStream, unlink, copyFile } from 'fs';
 import { createGzip } from 'zlib';
-
-export function showOutput() {
-  if (workspace.getConfiguration('lando-ui.output').get('autoShow')) {
-    outputChannel.show();
-  }
-}
 
 export function openTreeItem(offset: number, provider: any) {
   var treeItem = provider.getTreeItem(offset);
@@ -29,97 +23,6 @@ export function copyTreeItem(offset: number, provider: any) {
     text = text.split(': ')[1];
   }
   copyToClipboard(text);
-}
-
-export function checkVersion(): boolean {
-  var fullVersion = version();
-  // expecting fullVersion format like 'v3.0.0-rc.22' or 'v3.0.0-rrc.1'
-  var split = fullVersion.split('-');
-
-  var dotVersion = split[0].substr(1).split('.'); // [3, 0, 0]
-  var major = dotVersion[0];
-  var minor = dotVersion[1];
-  var patch = dotVersion[2];
-
-  var releaseNum = split[1].split('.'); // [rc, 22] or [rrc, 1]
-
-  // make checks against version
-  if ((releaseNum[0] == 'rc' && releaseNum[1] >= '13') || (releaseNum[0] == 'rrc' && releaseNum[1] >= '1')) {
-    return true;
-  }
-  return false;
-}
-
-export function checkAppRunning(appName: string) {
-  var listJSON = list(appName);
-  var runningList = json.parse(listJSON);
-  return runningList.length > 0;
-}
-
-export function addWorkspaceFolderName(jsonString: string): string {
-  var parse = json.parse(jsonString);
-  var newObject: any = {};
-  if (Object.keys(workspace.workspaceFolders ? workspace.workspaceFolders : []).length > 1) {
-    newObject['Workspace Folder'] = getWorkspaceFolderNameFromPath();
-  }
-  for (var element in parse) {
-    newObject[element] = parse[element];
-  }
-  return JSON.stringify(newObject);
-}
-
-export function setButtonTo(mode: string) {
-  switch (mode) {
-    case 'start':
-      toggleButton.text = 'Lando Start';
-      toggleButton.command = 'lando-ui.start';
-      break;
-
-    case 'starting':
-      toggleButton.text = 'Lando Starting...';
-      toggleButton.command = '';
-      break;
-
-    case 'stop':
-      toggleButton.text = 'Lando Stop';
-      toggleButton.command = 'lando-ui.stop';
-      break;
-
-    case 'stopping':
-      toggleButton.text = 'Lando Stopping...';
-      toggleButton.command = '';
-      break;
-
-    case 'restarting':
-      toggleButton.text = 'Lando Restarting...';
-      toggleButton.command = '';
-      break;
-
-    case 'rebuilding':
-      toggleButton.text = 'Lando Rebuilding...';
-      toggleButton.command = '';
-      break;
-
-    case 'destroying':
-      toggleButton.text = 'Lando Destroying...';
-      toggleButton.command = '';
-      break;
-
-    case 'init':
-      toggleButton.text = 'Lando Init';
-      toggleButton.command = 'lando-ui.init';
-      break;
-
-    case 'pick':
-      toggleButton.text = 'Lando Pick Folder';
-      toggleButton.command = 'lando-ui.pickWorkspaceFolder';
-      break;
-
-    default:
-      toggleButton.text = 'Loading...';
-      toggleButton.command = '';
-      break;
-  }
 }
 
 export function dbUserExport() {

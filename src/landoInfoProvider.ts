@@ -1,8 +1,7 @@
 import { TreeDataProvider, ExtensionContext, TreeItem, TreeItemCollapsibleState, EventEmitter, Event } from 'vscode';
 import { getWorkspaceFolderPath, refreshToggleButton } from './extension';
-import { info, reformatInfo } from './lando';
+import { info, reformatInfo, addWorkspaceFolderName } from './lando';
 import * as json from 'jsonc-parser';
-import { addWorkspaceFolderName } from './commands';
 
 export class LandoInfoProvider implements TreeDataProvider<number> {
   private _onDidChangeTreeData: EventEmitter<number | null> = new EventEmitter<number | null>();
@@ -36,7 +35,7 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
     this.tree = json.parseTree(this.text);
   }
 
-  getNode(offset: number): json.Node {
+  getNode(offset: number): json.Node | undefined {
     const path = json.getLocation(this.text, offset).path;
     return json.findNodeAtLocation(this.tree, path);
   }
@@ -50,9 +49,9 @@ export class LandoInfoProvider implements TreeDataProvider<number> {
     }
   }
 
-  getChildrenOffsets(node: json.Node): number[] {
+  getChildrenOffsets(node: json.Node | undefined): number[] {
     const offsets: number[] = [];
-    if (node.children) {
+    if (node && node.children) {
       for (const child of node.children) {
         const childNode = this.getNode(child.offset);
         if (childNode) {

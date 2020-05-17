@@ -66,10 +66,10 @@
       },
       {
         "command": "lando-ui.stopService",
-        "title": "Lando Stop",
+        "title": "Lando Stop Service",
         "icon": {
-          "light": "resources/light/primitive_square.svg",
-          "dark": "resources/dark/primitive_square.svg"
+          "light": "resources/light/debug-stop.svg",
+          "dark": "resources/dark/debug-stop.svg"
         }
       },
       {
@@ -132,16 +132,16 @@
         "command": "lando-ui.info-openURL",
         "title": "Open in Browser",
         "icon": {
-          "light": "resources/light/browser.svg",
-          "dark": "resources/dark/browser.svg"
+          "light": "resources/light/link-external.svg",
+          "dark": "resources/dark/link-external.svg"
         }
       },
       {
         "command": "lando-ui.list-openURL",
         "title": "Open in Browser",
         "icon": {
-          "light": "resources/light/browser.svg",
-          "dark": "resources/dark/browser.svg"
+          "light": "resources/light/link-external.svg",
+          "dark": "resources/dark/link-external.svg"
         }
       },
       {
@@ -237,52 +237,52 @@
         {
           "command": "lando-ui.pickWorkspaceFolder",
           "when": "view == lando-info",
-          "group": "lando-info-g1"
+          "group": "context-group1"
         },
         {
           "command": "lando-ui.init",
           "when": "view == lando-info",
-          "group": "lando-info-g2"
+          "group": "context-group2"
         },
         {
           "command": "lando-ui.start",
           "when": "view == lando-info",
-          "group": "lando-info-g3"
+          "group": "context-group3"
         },
         {
           "command": "lando-ui.stop",
           "when": "view == lando-info",
-          "group": "lando-info-g3"
+          "group": "context-group3"
         },
         {
           "command": "lando-ui.restart",
           "when": "view == lando-info",
-          "group": "lando-info-g3"
+          "group": "context-group3"
         },
         {
           "command": "lando-ui.rebuild",
           "when": "view == lando-info",
-          "group": "lando-info-g3"
+          "group": "context-group3"
         },
         {
           "command": "lando-ui.destroy",
           "when": "view == lando-info",
-          "group": "lando-info-g3"
+          "group": "context-group3"
         },
         {
           "command": "lando-ui.poweroff",
           "when": "view == lando-info || view == lando-list",
-          "group": "lando-info-g1"
+          "group": "context-group1"
         },
         {
           "command": "lando-ui.db-export",
           "when": "view == lando-info",
-          "group": "lando-info-g4"
+          "group": "context-group4"
         },
         {
           "command": "lando-ui.db-import",
           "when": "view == lando-info",
-          "group": "lando-info-g4"
+          "group": "context-group4"
         },
         {
           "command": "lando-ui.info-refresh",
@@ -358,7 +358,7 @@
   "dependencies": {
     "@types/yaml": "^1.2.0",
     "child_process": "^1.0.2",
-    "jsonc-parser": "^0.4.2",
+    "jsonc-parser": "^2.2.1",
     "strip-ansi": "^5.2.0",
     "vscode-nls": "^4.1.1",
     "yaml": "^1.6.0"

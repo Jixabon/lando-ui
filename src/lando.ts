@@ -1,13 +1,12 @@
-import { window, commands, workspace, Uri } from 'vscode';
-import { outputChannel, getAppNameFromAppConfig, getLandoFile, getCurrentAppName, getWorkspaceFolderPath, getWorkspaceFolderNameFromPath } from './extension';
+import { window, commands, workspace } from 'vscode';
+import { outputChannel, getAppNameFromAppConfig, getLandoFile, checkAppRunning, getCurrentAppName, getWorkspaceFolderPath, getWorkspaceFolderNameFromPath, showOutput, setButtonTo } from './extension';
 import { exec, execSync } from 'child_process';
 import * as json from 'jsonc-parser';
 import * as stripAnsi from 'strip-ansi';
-import { setButtonTo, showOutput } from './commands';
-import { fstat, unlink } from 'fs';
+import { unlink } from 'fs';
 
 export function init(): void {
-  var terminal = window.createTerminal('Lando Init');
+  var terminal = window.createTerminal('Lando UI');
   terminal.show();
   terminal.sendText('lando init');
 }
@@ -227,9 +226,9 @@ export function info(dir: string): string {
   }
 }
 
-export function list(app?: string): string {
+export function list(appName?: string): string {
   var command = 'lando list --format json';
-  if (app != undefined) command = command + ' --filter "app=' + app + '"';
+  if (appName != undefined) command = command + ' --filter "app=' + appName + '"';
   var stdout = execSync(command, { encoding: 'utf8' });
   return stdout;
 }
@@ -372,4 +371,16 @@ export function reformatList(list: string): string {
     });
     return JSON.stringify(newList);
   }
+}
+
+export function addWorkspaceFolderName(jsonString: string): string {
+  var parse = json.parse(jsonString);
+  var newObject: any = {};
+  if (Object.keys(workspace.workspaceFolders ? workspace.workspaceFolders : []).length > 1) {
+    newObject['Workspace Folder'] = getWorkspaceFolderNameFromPath();
+  }
+  for (var element in parse) {
+    newObject[element] = parse[element];
+  }
+  return JSON.stringify(newObject);
 }

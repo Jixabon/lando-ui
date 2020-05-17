@@ -1,10 +1,13 @@
 import { window, commands, workspace, ExtensionContext, StatusBarAlignment, ConfigurationTarget, FileSystemWatcher } from 'vscode';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
+import * as json from 'jsonc-parser';
 import * as lando from './lando';
-import { openTreeItem, copyTreeItem, checkAppRunning, checkVersion, setButtonTo, dbUserExport, dbUserImport } from './commands';
+import * as drush from './drush';
+import { openTreeItem, copyTreeItem, dbUserExport, dbUserImport } from './commands';
 import { LandoInfoProvider } from './landoInfoProvider';
 import { LandoListProvider } from './landoListProvider';
+import { DrushListProvider } from './drushListProvider';
 
 export var toggleButton: any;
 export var outputChannel: any;
@@ -36,14 +39,34 @@ export function activate(context: ExtensionContext) {
   // ----------------- Get workspace Folder -----------------
   determineWorkspaceFolder();
 
+  // ----------------- Fetch lando file and grab app name from it -----------------
+  if (workspaceFolderPath) {
+    if (checkLandoFileExists(workspaceFolderPath + '/.lando.yml')) {
+      updateCurrentAppConfig(workspaceFolderPath + '/.lando.yml');
+      commands.executeCommand('lando-ui.info-refresh');
+    } else {
+      commands.executeCommand('lando-ui.info-refresh');
+    }
+  }
+
+  startWatcher();
+  context.subscriptions.push(watcher);
+
+  // ----------------- Update the button to reflect workspace folder lando app status -----------------
+  refreshToggleButton();
+
   // ----------------- Tree Providers -----------------
   let landoInfoProvider: LandoInfoProvider = new LandoInfoProvider(context);
   let landoListProvider: LandoListProvider = new LandoListProvider(context);
+  let drushListProvider: DrushListProvider = new DrushListProvider(context);
   let landoInfoView = window.createTreeView('lando-info', {
     treeDataProvider: landoInfoProvider,
   });
   let landoListView = window.createTreeView('lando-list', {
     treeDataProvider: landoListProvider,
+  });
+  let drushListView = window.createTreeView('drush-list', {
+    treeDataProvider: drushListProvider,
   });
 
   // ----------------- Registering commands -----------------
@@ -64,36 +87,28 @@ export function activate(context: ExtensionContext) {
       registerCommand('lando-ui.db-export', () => dbUserExport()),
       registerCommand('lando-ui.db-import', () => dbUserImport()),
 
-      // info panel commands
+      // drush commands
+      registerCommand('lando-ui.drush-cache-rebuild', () => drush.cacheRebuild(workspaceFolderPath)),
+      registerCommand('lando-ui.drush-updatedb', () => drush.updateDatabase(workspaceFolderPath)),
+
+      // lando info panel commands
       registerCommand('lando-ui.info-refresh', () => landoInfoProvider.refresh()),
       registerCommand('lando-ui.info-refreshNode', (offset) => landoInfoProvider.refresh(offset)),
       registerCommand('lando-ui.info-openURL', (offset) => openTreeItem(offset, landoInfoProvider)),
       registerCommand('lando-ui.info-copy', (offset) => copyTreeItem(offset, landoInfoProvider)),
       registerCommand('lando-ui.sshService', (offset) => lando.sshService(offset, landoInfoProvider)),
 
-      // list panel commands
+      // lando list panel commands
       registerCommand('lando-ui.list-refresh', () => landoListProvider.refresh()),
       registerCommand('lando-ui.list-refreshNode', (offset) => landoListProvider.refresh(offset)),
       registerCommand('lando-ui.list-copy', (offset) => copyTreeItem(offset, landoListProvider)),
       registerCommand('lando-ui.stopService', (offset) => lando.stopService(offset, landoListProvider)),
+
+      // lando drush panel commands
+      registerCommand('lando-ui.drush-list-refresh', () => drushListProvider.refresh()),
+      registerCommand('lando-ui.drush-list-refreshNode', (offset) => drushListProvider.refresh(offset)),
     ]
   );
-
-  // ----------------- Fetch lando file and grab app name from it -----------------
-  if (workspaceFolderPath) {
-    if (checkLandoFileExists(workspaceFolderPath + '/.lando.yml')) {
-      updateCurrentAppConfig(workspaceFolderPath + '/.lando.yml');
-      commands.executeCommand('lando-ui.info-refresh');
-    } else {
-      commands.executeCommand('lando-ui.info-refresh');
-    }
-  }
-
-  startWatcher();
-  context.subscriptions.push(watcher);
-
-  // ----------------- Update the button to reflect workspace folder lando app status -----------------
-  refreshToggleButton();
 
   // ----------------- Watch for changes in configuration -----------------
   workspace.onDidChangeConfiguration(() => {
@@ -130,7 +145,7 @@ export function getLandoFile(filePath: string): any {
 }
 
 export function getAppNameFromAppConfig(appConfig: any): string {
-  return appConfig ? appConfig.name.replace(/[-_]/g, '') : '';
+  return appConfig ? appConfig.name.replace(/[-_\.]/g, '') : '';
 }
 
 export function updateCurrentAppConfig(landoFilePath: string) {
@@ -259,4 +274,89 @@ export function refreshToggleButton() {
       setButtonTo('init');
     }
   }
+}
+
+export function showOutput() {
+  if (workspace.getConfiguration('lando-ui.output').get('autoShow')) {
+    outputChannel.show();
+  }
+}
+
+export function setButtonTo(mode: string) {
+  switch (mode) {
+    case 'start':
+      toggleButton.text = 'Lando Start';
+      toggleButton.command = 'lando-ui.start';
+      break;
+
+    case 'starting':
+      toggleButton.text = 'Lando Starting...';
+      toggleButton.command = '';
+      break;
+
+    case 'stop':
+      toggleButton.text = 'Lando Stop';
+      toggleButton.command = 'lando-ui.stop';
+      break;
+
+    case 'stopping':
+      toggleButton.text = 'Lando Stopping...';
+      toggleButton.command = '';
+      break;
+
+    case 'restarting':
+      toggleButton.text = 'Lando Restarting...';
+      toggleButton.command = '';
+      break;
+
+    case 'rebuilding':
+      toggleButton.text = 'Lando Rebuilding...';
+      toggleButton.command = '';
+      break;
+
+    case 'destroying':
+      toggleButton.text = 'Lando Destroying...';
+      toggleButton.command = '';
+      break;
+
+    case 'init':
+      toggleButton.text = 'Lando Init';
+      toggleButton.command = 'lando-ui.init';
+      break;
+
+    case 'pick':
+      toggleButton.text = 'Lando Pick Folder';
+      toggleButton.command = 'lando-ui.pickWorkspaceFolder';
+      break;
+
+    default:
+      toggleButton.text = 'Loading...';
+      toggleButton.command = '';
+      break;
+  }
+}
+
+export function checkVersion(): boolean {
+  var fullVersion = lando.version();
+  // expecting fullVersion format like 'v3.0.0-rc.22' or 'v3.0.0-rrc.1'
+  var split = fullVersion.split('-');
+
+  var dotVersion = split[0].substr(1).split('.'); // [3, 0, 0]
+  var major = dotVersion[0];
+  var minor = dotVersion[1];
+  var patch = dotVersion[2];
+
+  var releaseNum = split[1].split('.'); // [rc, 22] or [rrc, 1]
+
+  // make checks against version
+  if ((releaseNum[0] == 'rc' && releaseNum[1] >= '13') || (releaseNum[0] == 'rrc' && releaseNum[1] >= '1')) {
+    return true;
+  }
+  return false;
+}
+
+export function checkAppRunning(appName: string) {
+  var listJSON = lando.list(appName);
+  var runningList = json.parse(listJSON);
+  return runningList.length > 0;
 }
