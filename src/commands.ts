@@ -111,7 +111,7 @@ function writeDbFile(savePath: string, host: string) {
   dbExportCustom(getWorkspaceFolderPath(), host, 'tmp_export.sql');
   rename(getWorkspaceFolderPath() + '/' + 'tmp_export.sql.gz', savePath + '.gz', (err) => {
     if (err) {
-      console.log(err);
+      outputChannel.append('Error: Moving export file to save location: ' + err);
       window.showInformationMessage('Failed to move export to save location');
     }
     window.showInformationMessage('Successfully exported database from ' + host);
