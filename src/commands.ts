@@ -1,9 +1,8 @@
 import { window, workspace, env, Uri, QuickPickItem } from 'vscode';
 import { outputChannel, getWorkspaceFolderPath } from './extension';
-import { dbExport, info, dbExportOut, dbImport } from './lando';
+import { dbExport, info, dbExportCustom, dbImport } from './lando';
 import * as json from 'jsonc-parser';
-import { writeFile, createReadStream, createWriteStream, unlink, copyFile } from 'fs';
-import { createGzip } from 'zlib';
+import { copyFile, rename } from 'fs';
 
 export function openTreeItem(offset: number, provider: any) {
   var treeItem = provider.getTreeItem(offset);
@@ -108,27 +107,13 @@ function dbSaveAs(host: string) {
 }
 
 function writeDbFile(savePath: string, host: string) {
-  writeFile(savePath, dbExportOut(getWorkspaceFolderPath(), host), (err) => {
+  window.showInformationMessage('Exporting database from ' + host);
+  dbExportCustom(getWorkspaceFolderPath(), host, 'tmp_export.sql');
+  rename(getWorkspaceFolderPath() + '/' + 'tmp_export.sql.gz', savePath + '.gz', (err) => {
     if (err) {
-      window.showErrorMessage('Failed to write file');
-      outputChannel.appendLine('-----------------------');
-      outputChannel.append('Failed to write file: ' + err);
-      outputChannel.appendLine('-----------------------');
-      return;
+      console.log(err);
+      window.showInformationMessage('Failed to move export to save location');
     }
-    var gzip = createGzip();
-    var r = createReadStream(savePath);
-    var w = createWriteStream(savePath + '.gz');
-    r.pipe(gzip).pipe(w);
-    unlink(savePath, (err) => {
-      if (err) {
-        window.showErrorMessage('Failed to remove unzipped file');
-        outputChannel.appendLine('-----------------------');
-        outputChannel.append('Failed to remove unzipped file: ' + err);
-        outputChannel.appendLine('-----------------------');
-        return;
-      }
-    });
     window.showInformationMessage('Successfully exported database from ' + host);
   });
 }

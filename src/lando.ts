@@ -96,7 +96,7 @@ export function restart(dir: string): void {
       window.showWarningMessage('Please initiate a lando project: ' + data);
       setButtonTo('init');
     }
-    if (data.includes('just so we can start it up again')) {
+    if (data.includes('just so we can start it up again') || data.includes('Stopping and restarting your app')) {
       window.showInformationMessage('Restarting the Lando app ' + getCurrentAppName());
       setButtonTo('restarting');
     }
@@ -272,11 +272,19 @@ export function dbExport(dir: string, host?: string, filePath?: string) {
   });
 }
 
-export function dbExportOut(dir: string, host?: string) {
-  let command = 'lando db-export --stdout';
+export function dbExportCustom(dir: string, host?: string, filePath?: string) {
+  let command = 'lando db-export';
   if (host) command += ' -h ' + host;
-  var stdout = execSync(command, { encoding: 'utf8' });
-  return stdout;
+  if (filePath) command += ' "' + filePath + '"';
+
+  var stdout = execSync(command, { cwd: dir });
+  if (stdout.includes('Could not find app in this dir or a reasonable amount of directories above it!')) {
+    window.showWarningMessage('Please initiate a lando project');
+    setButtonTo('init');
+  }
+  if (stdout.includes('Failed')) {
+    window.showWarningMessage('Failed to export database from ' + host);
+  }
 }
 
 export function dbImport(dir: string, host?: string, noWipe?: boolean, filePath?: string, isTmp?: boolean) {
