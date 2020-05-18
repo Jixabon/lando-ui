@@ -2,9 +2,13 @@
 
 All notable changes to the "lando-ui" extension will be documented in this file.
 
-## [Unreleased]
+## [0.9.0] - 2020-05-17
 
-- (v3.0.0-rrc.3) Utilize db-import and db-export ability to use absolute paths.
+### Fixed
+
+- Accept non release candidate versions of Lando
+- Button would not detect running status if Lando project had '.' in the name
+- Custom db export resulting in empty file
 
 ## [0.8.0] - 2020-04-10
 
