@@ -332,10 +332,15 @@ export function checkVersion(): boolean {
   var minor = dotVersion[1];
   var patch = dotVersion[2];
 
-  var releaseNum = split[1].split('.'); // [rc, 22] or [rrc, 1]
-
   // make checks against version
-  if ((releaseNum[0] == 'rc' && releaseNum[1] >= '13') || (releaseNum[0] == 'rrc' && releaseNum[1] >= '1')) {
+  if (major >= '3') {
+    if (typeof split[1] !== 'undefined') {
+      var releaseNum = split[1].split('.'); // [rc, 22] or [rrc, 1]
+      if ((releaseNum[0] == 'rc' && releaseNum[1] >= '13') || (releaseNum[0] == 'rrc' && releaseNum[1] >= '1')) {
+        return true;
+      }
+      return false;
+    }
     return true;
   }
   return false;
