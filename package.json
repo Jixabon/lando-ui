@@ -353,7 +353,7 @@
     "typescript": "^3.3.1",
     "vscode-test": "^1.2.0",
     "webpack": "^4.41.1",
-    "webpack-cli": "^3.3.9"
+    "webpack-cli": "^3.3.12"
   },
   "dependencies": {
     "@types/yaml": "^1.2.0",
