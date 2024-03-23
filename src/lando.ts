@@ -19,11 +19,11 @@ export function start(dir: string): void {
       window.showWarningMessage('Please initiate a lando project: ' + data);
       setButtonTo('init');
     }
-    if (data.includes('Starting app')) {
+    if (data.includes('Starting app') || data.includes('Let\'s get this party started')) {
       window.showInformationMessage('Starting the Lando app ' + getCurrentAppName());
       setButtonTo('starting');
     }
-    if (data.includes('Your app has started up correctly')) {
+    if (data.includes('Your app has started up correctly') || data.includes('Your app is starting up')) {
       window.showInformationMessage('The Lando app ' + getCurrentAppName() + ' started successfully');
       setButtonTo('stop');
       commands.executeCommand('lando-ui.info-refresh');
@@ -50,11 +50,11 @@ export function stop(dir: string, appName?: string): void {
       window.showWarningMessage('Please initiate a lando project: ' + data);
       if (isCurrentApp) setButtonTo('init');
     }
-    if (data.includes('Stopping app')) {
+    if (data.includes('Stopping app') || data.includes('This party\'s over')) {
       window.showInformationMessage('Stopping the Lando app ' + (appName || getCurrentAppName()));
       if (isCurrentApp) setButtonTo('stopping');
     }
-    if (data.includes('stopped')) {
+    if (data.includes('stopped') || data.includes('has been stopped')) {
       window.showInformationMessage('The Lando app ' + (appName || getCurrentAppName()) + ' stopped successfully');
       if (isCurrentApp) setButtonTo('start');
       commands.executeCommand('lando-ui.info-refresh');
@@ -100,7 +100,7 @@ export function restart(dir: string): void {
       window.showInformationMessage('Restarting the Lando app ' + getCurrentAppName());
       setButtonTo('restarting');
     }
-    if (data.includes('Your app has started up correctly')) {
+    if (data.includes('Your app has started up correctly') || data.includes('Your app is starting up')) {
       window.showInformationMessage('The Lando app ' + getCurrentAppName() + ' has restarted successfully');
       setButtonTo('stop');
       commands.executeCommand('lando-ui.info-refresh');
@@ -132,7 +132,7 @@ export function rebuild(dir: string): void {
           window.showInformationMessage('Rebuilding the Lando app ' + getCurrentAppName());
           setButtonTo('rebuilding');
         }
-        if (data.includes('Your app has started up correctly')) {
+        if (data.includes('Your app has started up correctly') || data.includes('Your app is starting up')) {
           window.showInformationMessage('The Lando app ' + getCurrentAppName() + ' has rebuilt successfully');
           setButtonTo('stop');
           commands.executeCommand('lando-ui.info-refresh');
@@ -190,7 +190,7 @@ export function poweroff(): void {
   showOutput();
   const child = exec('lando poweroff', { encoding: 'utf8' });
   child.stdout.on('data', (data) => {
-    if (data.includes('Spinning Lando containers down')) {
+    if (data.includes('Spinning Lando containers down') || data.includes('SHUT IT ALL DOWN')) {
       window.showInformationMessage('Powering off Lando');
     }
     if (data.includes('Lando containers have been spun down')) {
