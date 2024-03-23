@@ -50,6 +50,21 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.10.0
+
+#### Fixed
+
+- checkVersion function was wrongly omitting new "beta" version
+- added more search strings for detecting status of project
+
+### 0.9.0
+
+#### Fixed
+
+- Accept non release candidate versions of Lando
+- Button would not detect running status if Lando project had '.' in the name
+- Custom db export resulting in empty file
+
 ### v0.8.0
 
 #### Changed
@@ -59,109 +74,6 @@ This extension contributes the following settings:
 #### Removed
 
 - Removed unused dependencies
-
-### v0.7.0
-
-#### Added
-
-- Lando Destroy command.
-- Lando Rebuild command.
-
-#### Fixed
-
-- Stopping a service from list panel showed current app in the message.
-
-### v0.6.1
-
-#### Fixed
-
-- Bug where button refresh was overriding earlier button states.
-- Bug that make button stuck on "stopping"
-
-### v0.6.0
-
-### Fixed
-
-- New pre-release series not being parsed correctly.
-- Parsing new list json format (list is no longer nested under an app name).
-- Hiding commands that can't be run outside of the side panels.
-
-### Changed
-
-- Button will now check app running status on Info or List panel refreshes.
-- Start, Stop, Restarting, etc messages to include the app name in message.
-
-### v0.5.0
-
-#### Added
-
-- Button to copy values in Lando Info and Lando List panels.
-- Button to ssh into a service in Lando Info panel.
-- db-export and db-import commands.
-- Config setting for db-export default path.
-
-### v0.4.1
-
-#### Fixed
-
-- App not found message displaying wrong.
-
-### v0.4.0
-
-#### Added
-
-- Config setting to turn off auto show of command output.
-- Now handles multiple Workspace folders.
-- Message in List panel to show no running services.
-- Info Panel shows what workspace folder (if one) is being used.
-
-#### Fixed
-
-- Reworked message when no app is found for the Info panel.
-
-### v0.3.1
-
-#### Fixed
-
-- Removed stop option from the '_global_' proxy container as you can not directly stop it.
-- Set all 1st level items in the List panel to start collapsed to give a simple list of what is running.
-
-### v0.3.0
-
-#### Added
-
-- Button to stop other currently running projects in the Lando List view.
-- Clean up Lando Info and Lando List outputs to be more visually appealing and first glance understandable.
-
-### v0.2.0
-
-#### Added
-
-- Button to open links in info and list views in the system default browser.
-- Lando restart, Lando poweroff and Lando init to available commands.
-- Output auto shows when Start/Stop commands have been run. (config option will be added soon if this is not the desired functionality)
-
-#### Fixed
-
-- Improved .lando.yml file detection and error handling.
-- Now checks lando version and enforces requirement.
-- General clean up of code and refactoring.
-
-### v0.1.3
-
-#### Fixed
-
-- jsonc-parser moved to an external webpack resource.
-
-### v0.1.0
-
-#### Added
-
-- Status Bar Item that shows status of current workspace lando project and also provides ability to toggle status.
-- View for Lando Info to show basic info about the current workspace lando project.
-- View for Lando List to show basic info about the containers that are running.
-- Refresh button to both views.
-- Menu items to run lando commands.
 
 ---
 

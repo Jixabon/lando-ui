@@ -2,6 +2,13 @@
 
 All notable changes to the "lando-ui" extension will be documented in this file.
 
+## [0.10.0] - 2024-03-23
+
+### Fixed
+
+- checkVersion function was wrongly omitting new "beta" version
+- added more search strings for detecting status of project
+
 ## [0.9.0] - 2020-05-17
 
 ### Fixed
