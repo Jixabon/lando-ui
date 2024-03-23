@@ -328,20 +328,31 @@ export function checkVersion(): boolean {
   var split = fullVersion.split('-');
 
   var dotVersion = split[0].substr(1).split('.'); // [3, 0, 0]
-  var major = dotVersion[0];
-  var minor = dotVersion[1];
-  var patch = dotVersion[2];
+  var major = Number(dotVersion[0]);
+  var minor = Number(dotVersion[1]);
+  var patch = Number(dotVersion[2]);
 
-  // make checks against version
-  if (major >= '3') {
-    if (typeof split[1] !== 'undefined') {
-      var releaseNum = split[1].split('.'); // [rc, 22] or [rrc, 1]
-      if ((releaseNum[0] == 'rc' && releaseNum[1] >= '13') || (releaseNum[0] == 'rrc' && releaseNum[1] >= '1')) {
-        return true;
-      }
-      return false;
-    }
-    return true;
+  var subReleaseType = null;
+  var subReleaseNum = -1;
+  if (typeof split[1] !== 'undefined') {
+    var subRelease = split[1].split('.'); // [rc, 22] or [rrc, 1]
+    subReleaseType = subRelease[0];
+    subReleaseNum = Number(subRelease[1]);
+  }
+
+	// check that version is after `lando info --format json` was introduced
+  if (
+  	major === 3
+    && minor === 0
+    && patch === 0
+    && (
+    	(subReleaseType === 'rc' && subReleaseNum >= 13)
+      || (subReleaseType === 'rrc' && subReleaseNum >= 1)
+    )
+  ) {
+  	return true;
+  } else if (major >= 3 && ((minor === 0 && patch >= 1) || (minor > 0 && patch >= 0))) {
+  	return true;
   }
   return false;
 }
